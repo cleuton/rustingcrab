@@ -307,3 +307,122 @@ fn main() {
 ```
 
 O operador `::` é, portanto, a maneira de "seguir o caminho" até o item desejado, seja de um módulo local ou externo.
+
+## Reusando código 
+
+Em outras linguagens de programação, como **Python** é possível reusar código (funções etc) com pouca ou nenhuma "burocracia". Em **Rust** isso é diferente. Há 3 maneiras de você "importar" código de outro programa dentro do seu: 
+
+1. Crie um módulo.
+2. Crie uma biblioteca "lib". 
+3. Use a macro `include!`.
+
+Se você precisa criar código que será utilizado em mais de um programa, então coloque esse código em uma biblioteca Rust e utilize a instrução `use` para importar o que desejar.
+
+### lib
+
+Se você quiser "importar" código de outro programa em Rust sem usar módulos, normalmente faz isso ao transformar o outro programa em uma **biblioteca** (um `crate` do tipo biblioteca) e adicioná-lo como dependência ao seu projeto principal. Isso é feito com o **Cargo**, o gerenciador de pacotes do Rust.
+
+Aqui estão os passos resumidos:
+
+### **1. Transforme o programa em uma biblioteca**
+- No programa que contém o código que você quer usar, ajuste o `Cargo.toml` para criar uma biblioteca. Certifique-se de que ele tem:
+  ```toml
+  [lib]
+  name = "nome_da_biblioteca"
+  path = "src/lib.rs"
+  ```
+- Coloque o código que deseja "importar" no arquivo `src/lib.rs`.
+
+Exemplo de `lib.rs`:
+```rust
+pub fn saudacao() {
+    println!("Olá do outro programa!");
+}
+```
+
+### **2. Adicione como dependência ao programa principal**
+- No projeto onde você quer usar o código, adicione o outro programa como dependência no `Cargo.toml`.
+  Se o programa estiver em um diretório local:
+  ```toml
+  [dependencies]
+  nome_da_biblioteca = { path = "../caminho_do_outro_programa" }
+  ```
+
+### **3. Use o código da biblioteca**
+- Depois de adicionar a dependência, você pode usar a instrução `use` para importar os itens da biblioteca:
+  ```rust
+  use nome_da_biblioteca::saudacao;
+
+  fn main() {
+      saudacao();
+  }
+  ```
+
+Em Rust, para importar diretamente uma função de outro código que **não seja uma biblioteca** e **não use `mod`**, o caminho mais direto é ajustar o projeto para usar o sistema de módulos ou bibliotecas, porque o compilador Rust espera uma estrutura hierárquica clara.
+
+No entanto, se você realmente quiser **usar funções de outro código Rust sem transformá-lo em biblioteca ou usar módulos**, pode fazer isso indiretamente ao **compilar o outro código como um executável e chamar suas funções externamente**. Aqui estão algumas abordagens possíveis:
+
+---
+
+### **1. Executar o outro programa como um subprocesso**
+Use o outro programa como um executável e chame-o a partir do seu código principal. Isso não importa diretamente as funções, mas utiliza a funcionalidade do outro programa.
+
+Exemplo:
+- Suponha que o outro código seja um programa executável chamado `outro_programa.rs`:
+  ```rust
+  // outro_programa.rs
+  pub fn saudacao() {
+      println!("Olá de outro programa!");
+  }
+
+  fn main() {
+      saudacao();
+  }
+  ```
+- No seu código principal, você pode chamá-lo com `std::process::Command`:
+  ```rust
+  use std::process::Command;
+
+  fn main() {
+      let output = Command::new("cargo")
+          .arg("run")
+          .current_dir("../caminho_para_outro_programa")
+          .output()
+          .expect("Falha ao executar o outro programa");
+
+      println!("Saída do outro programa: {}", String::from_utf8_lossy(&output.stdout));
+  }
+  ```
+
+### Macro `include!`
+
+Se o outro código não usa módulos ou bibliotecas e está em um arquivo separado, você pode incluir o código com a macro `include!`. Isso essencialmente copia o conteúdo do arquivo durante a compilação.
+
+Exemplo:
+- Código no arquivo `outro_programa.rs`:
+  ```rust
+  pub fn saudacao() {
+      println!("Olá de outro programa!");
+  }
+  ```
+- No seu código principal:
+  ```rust
+  include!("../caminho_para/outro_programa.rs");
+
+  fn main() {
+      saudacao(); // A função do outro arquivo agora está acessível
+  }
+  ```
+> **Nota:** Esta abordagem pode funcionar, mas é considerada um **mau hábito** para projetos grandes, porque não há encapsulamento ou reutilização clara.
+
+### **Recomendação**
+Embora seja possível usar abordagens como `include!` ou subprocessos, a melhor prática em Rust é sempre estruturar o código como módulos (`mod`) ou bibliotecas (`lib.rs`). Isso facilita a manutenção, o reuso e garante que o código esteja alinhado com as convenções do Rust. Se o outro código for reutilizável, considere refatorá-lo em uma biblioteca.
+
+# Resumo da aula
+
+1. Vimos os elementos que um programa **Rust** pode conter: Funções, structs, importações de módulos, declarações de módulos etc.
+2. Vimos como as funções e métodos são declarados e que uma **Struct** é semelhante a uma **Classe**. 
+3. Vimos brevemente como declarar variáveis.
+4. Vimos o que é um **módulo**, como é especificado o **caminho** de seus elementos exportados e como ele pode ser importado dentro de um programa **Rust**.
+5. Vimos o que é uma **biblioteca**, como é declarada e como podemos utilizá-la em outros programas **Rust**.
+
