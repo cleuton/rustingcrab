@@ -358,42 +358,6 @@ pub fn saudacao() {
   }
   ```
 
-Em Rust, para importar diretamente uma função de outro código que **não seja uma biblioteca** e **não use `mod`**, o caminho mais direto é ajustar o projeto para usar o sistema de módulos ou bibliotecas, porque o compilador Rust espera uma estrutura hierárquica clara.
-
-No entanto, se você realmente quiser **usar funções de outro código Rust sem transformá-lo em biblioteca ou usar módulos**, pode fazer isso indiretamente ao **compilar o outro código como um executável e chamar suas funções externamente**. Aqui estão algumas abordagens possíveis:
-
----
-
-### **1. Executar o outro programa como um subprocesso**
-Use o outro programa como um executável e chame-o a partir do seu código principal. Isso não importa diretamente as funções, mas utiliza a funcionalidade do outro programa.
-
-Exemplo:
-- Suponha que o outro código seja um programa executável chamado `outro_programa.rs`:
-  ```rust
-  // outro_programa.rs
-  pub fn saudacao() {
-      println!("Olá de outro programa!");
-  }
-
-  fn main() {
-      saudacao();
-  }
-  ```
-- No seu código principal, você pode chamá-lo com `std::process::Command`:
-  ```rust
-  use std::process::Command;
-
-  fn main() {
-      let output = Command::new("cargo")
-          .arg("run")
-          .current_dir("../caminho_para_outro_programa")
-          .output()
-          .expect("Falha ao executar o outro programa");
-
-      println!("Saída do outro programa: {}", String::from_utf8_lossy(&output.stdout));
-  }
-  ```
-
 ### Macro `include!`
 
 Se o outro código não usa módulos ou bibliotecas e está em um arquivo separado, você pode incluir o código com a macro `include!`. Isso essencialmente copia o conteúdo do arquivo durante a compilação.
