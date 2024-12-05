@@ -6,6 +6,10 @@
 
 [**Cleuton Sampaio**](https://linkedin.com/in/cleutonsampaio)
 
+[**Veja no GitHub**](https://github.com/cleuton/rustingcrab)
+
+[**Menu do curso**](https://github.com/cleuton/rustingcrab/rusting_with_style_PTBR)
+
 # Estrutura
 
 A linguagem **Rust** tem a simplicidade estrutural da linguagem **C**. Outras linguagens como **Java** possuem estruturas muito mais rígidas e verbosas. 

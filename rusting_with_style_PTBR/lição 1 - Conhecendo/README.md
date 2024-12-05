@@ -6,6 +6,10 @@
 
 [**Cleuton Sampaio**](https://linkedin.com/in/cleutonsampaio)
 
+[**Veja no GitHub**](https://github.com/cleuton/rustingcrab)
+
+[**Menu do curso**](https://github.com/cleuton/rustingcrab/rusting_with_style_PTBR)
+
 # Certificado do curso
 
 Este curso é totalmente gratuito, exceto pelo **certificado**. Você pode fazer o curso e nem se preocupar com o certificado. Porém, se quiser um certificado de conclusão, precisará agendar [**NESTE LINK**](https://cleutonsampaio.com/#contact) abra o menu **contatos** e preencha o formulário solicitando o agendamento.
