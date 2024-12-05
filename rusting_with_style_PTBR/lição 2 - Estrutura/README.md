@@ -294,6 +294,7 @@ Aqui, `std` é o módulo padrão, `cmp` é um submódulo, e `max` é a função.
 
 2. **Caminho relativo**:
 Baseado na localização atual do código, usando módulos locais:
+
 ```rust
 mod util {
     pub fn saudacao() {
