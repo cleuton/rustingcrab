@@ -8,7 +8,7 @@
 
 [**Veja no GitHub**](https://github.com/cleuton/rustingcrab)
 
-[**Menu do curso**](https://github.com/cleuton/rustingcrab/rusting_with_style_PTBR)
+[**Menu do curso**](../)
 
 # Certificado do curso
 
