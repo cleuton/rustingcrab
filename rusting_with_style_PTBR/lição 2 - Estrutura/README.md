@@ -387,6 +387,51 @@ Exemplo:
 ### **Recomendação**
 Embora seja possível usar abordagens como `include!` ou subprocessos, a melhor prática em Rust é sempre estruturar o código como módulos (`mod`) ou bibliotecas (`lib.rs`). Isso facilita a manutenção, o reuso e garante que o código esteja alinhado com as convenções do Rust. Se o outro código for reutilizável, considere refatorá-lo em uma biblioteca.
 
+## Um exercício de estrutura
+
+Pegue o projeto [**Labirinto**] e estude o que ele faz. Ele está em um só arquivo `main.rs` e isso é uma prática ruim. Vamos estruturá-lo e modularizá-lo.
+
+Não se preocupe! [**o resultado está aqui nessa lição**](./codigo/labirinto_modular/).
+
+Veja como você pode organizar o seu código em módulos, de modo a seguir boas práticas do ecossistema Rust:
+
+1. **Separar a lógica em arquivos distintos**:  
+   É comum em projetos Rust dividir o código em módulos conforme a responsabilidade de cada parte. Aqui temos alguns componentes claros:
+   - **`Celula`**: Representa uma célula do labirinto.
+   - **`Pilha`** (Stack): Estrutura de dados genérica para auxiliar na geração e na solução do labirinto.
+   - **`Labirinto`**: Responsável pela geração e armazenamento do estado do labirinto.
+   - **`Solver`**: Responsável por encontrar o caminho no labirinto.
+   
+   Além disso, há constantes que podem ser colocadas em um módulo separado, ou no módulo que faça mais sentido semânticamente (por exemplo, constantes de direção podem ir junto com `Celula` ou `Labirinto`, já que elas se referem à estrutura do labirinto).
+
+2. **Estrutura de diretórios sugerida**:
+
+   ```
+   src/
+   ├── main.rs
+   ├── lib.rs
+   ├── celula.rs
+   ├── pilha.rs
+   ├── labirinto.rs
+   └── solver.rs
+   ```
+
+   - **`main.rs`**: Fica a função `main` e a lógica de entrada/saída (parsing de argumentos, impressão do resultado final).
+   - **`lib.rs`**: Declara os módulos (`mod celula; mod pilha; mod labirinto; mod solver;`) e faz reexportações se necessário. Pode ser o ponto central de reexportação caso você pretenda que sua biblioteca seja utilizada por outros projetos.
+   - **`celula.rs`**: Define a struct `Celula` e as constantes relacionadas à direção (`NORTE, SUL, LESTE, OESTE`), já que fazem sentido no contexto da célula (cada célula possui paredes nesses eixos).
+   - **`pilha.rs`**: Define a struct `Pilha<T>` e suas implementações.
+   - **`labirinto.rs`**: Define a struct `Labirinto`, seus métodos de criação, inicialização, geração (backtracking), display (pode manter a trait `fmt::Display` aqui) e funções auxiliares.
+   - **`solver.rs`**: Define a struct `Solver` e o método `solve`.
+
+
+3. **Motivação das decisões**:
+   - **Separação por responsabilidade**: `celula.rs` contém apenas a definição e lógica relacionada à célula; `pilha.rs` encapsula a lógica da pilha; `labirinto.rs` é responsável pela geração e manipulação do labirinto; `solver.rs` pela solução do mesmo. Essa divisão torna o código mais fácil de manter, entender e testar.
+   - **Clareza e reutilização**: Com a separação, caso você queira reutilizar `Pilha` em outro projeto, basta copiá-la de `pilha.rs`. Caso queira testar apenas a lógica do labirinto, você pode fazê-lo isoladamente.
+   - **Escopo dos itens**: Ao colocar `pub` somente no que precisa ser público, você controla melhor a API exposta. Isso segue a boa prática de "expor o mínimo necessário".
+   - **Módulo `lib.rs`**: Permite que o seu código possa evoluir para uma biblioteca ou um crate. `main.rs` é apenas o ponto de entrada quando você deseja executá-lo como um binário.
+
+Seguindo essa abordagem de modularização, você terá um código mais organizado, manutenível e alinhado às boas práticas da comunidade Rust.
+
 # Resumo da aula
 
 1. Vimos os elementos que um programa **Rust** pode conter: Funções, structs, importações de módulos, declarações de módulos etc.
