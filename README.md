@@ -19,6 +19,7 @@ Este é o lugar para você **enferrujar** com classe! Exemplos, cursos e até op
 - [**Ray Tracing**](./code_samples/raytracing/): Demonstração da técnica de Ray Tracing para games.
 - [**Shunting Yard**](./code_samples/shunting_yard/): Uso do algoritmo de Shunting Yard para converter expressões.
 - [**Sounds**](./code_samples/sounds/): Como gerar sons para games.
+- [**Structs WTF**](./code_samples/estrutura/): Para você que quer saber o básico de `structs`. 
 
 
 
