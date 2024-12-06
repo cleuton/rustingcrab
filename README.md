@@ -12,5 +12,13 @@ Este é o lugar para você **enferrujar** com classe! Exemplos, cursos e até op
 
 > O curso **Rusting with style** é gratuito, mas você pode agendar uma entrevista para tirar um **certificado**. Essa entrevista é paga, mas haverá uma promoção com algumas entrevistas gratuitas. Quando estiver disponível para marcar entrevistas, basta agendar no meu site. Veja o PDF da primeira aula. 
 
+## Exemplos de códigos
+
+- [**Labirinto**](./code_samples/labirinto/): Cria e resolve labirintos.
+- [**NLL**](./code_samples/nll/): Explicação sobre Ownership, borrow e NLL.
+- [**Ray Tracing**](./code_samples/raytracing/): Demonstração da técnica de Ray Tracing para games.
+- [**Shunting Yard**](./code_samples/shunting_yard/): Uso do algoritmo de Shunting Yard para converter expressões.
+- [**Sounds**](./code_samples/sounds/): Como gerar sons para games.
+
 
 
