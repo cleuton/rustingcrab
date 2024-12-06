@@ -1,0 +1,12 @@
+[package]
+name = "maze_generator"
+version = "0.1.0"
+edition = "2021"
+authors = ["cleuton@cleutonsampaio.com"]
+description = "Um gerador e resolvedor de labirintos em Rust"
+license = "MIT"
+readme = "README.md"
+repository = "https://github.com/cleuton/rustingcrab"
+
+[dependencies]
+rand = "0.8"
