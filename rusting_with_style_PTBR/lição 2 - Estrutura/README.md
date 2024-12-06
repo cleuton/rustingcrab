@@ -10,6 +10,8 @@
 
 [**Menu do curso**](../)
 
+[**VÍDEO DESTA AULA**](https://youtu.be/ZLOtPwL88OA?si=lCYr89gtXHQx1u85)
+
 # Estrutura
 
 A linguagem **Rust** tem a simplicidade estrutural da linguagem **C**. Outras linguagens como **Java** possuem estruturas muito mais rígidas e verbosas. 
