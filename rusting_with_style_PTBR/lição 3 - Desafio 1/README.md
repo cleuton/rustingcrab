@@ -10,7 +10,7 @@
 
 [**Menu do curso**](../)
 
-[**VÍDEO DESTA AULA**]()
+[**VÍDEO DESTA AULA**](https://rustingcrab.com/rusting_with_style_PTBR/li%C3%A7%C3%A3o%203%20-%20Desafio%201/)
 
 # Primeiro desafio
 
