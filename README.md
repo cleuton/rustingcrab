@@ -12,6 +12,10 @@ Este é o lugar para você **enferrujar** com classe! Exemplos, cursos e até op
 
 > O curso **Rusting with style** é gratuito, mas você pode agendar uma entrevista para tirar um **certificado**. Essa entrevista é paga, mas haverá uma promoção com algumas entrevistas gratuitas. Quando estiver disponível para marcar entrevistas, basta agendar no meu site. Veja o PDF da primeira aula. 
 
+## Técnicas
+
+- [**VM com QEMU**](./Criar%20e%20rodar%20VM%20com%20QEMU/): Crie e rode máquinas virtuais completas (com **kernel**) utilizando o **QEMU**. Assim, poderá compilar um **kernel** compatível com **Rust** e criar **device drivers** para ele. 
+
 ## Exemplos de códigos
 
 - [**Labirinto**](./code_samples/labirinto/): Cria e resolve labirintos.
