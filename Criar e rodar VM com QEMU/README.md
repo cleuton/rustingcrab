@@ -35,10 +35,10 @@ Você deve instalar o **qemu** apropriado para a sua plataforma:
 - qemu-system-x86
 - qemu-system-arm
 
-Agora, escolha uma pasta e crie um disco virtual, digamos com 20GB: 
+Agora, escolha uma pasta e crie um disco virtual, digamos com 100GB (pode criar com menos): 
 
 ```shell
-qemu-img create -f qcow2 ubuntu-server-disk.qcow2 20G
+qemu-img create -f qcow2 ubuntu-server-disk.qcow2 100G
 ```  
 
 O formato **QCOW2** (QEMU Copy On Write 2) é um formato de disco virtual usado pelo QEMU para armazenar sistemas de arquivos de máquinas virtuais. Ele é amplamente utilizado por ser eficiente em termos de espaço e oferecer recursos avançados que tornam a virtualização mais prática e flexível.
@@ -113,11 +113,82 @@ qemu-system-x86_64 \
   -m 2048 \
   -cpu host \
   -smp 2 \
-  -drive file=ubuntu-server-disk.qcow2,format=qcow2 \
-  -boot c \
+  -drive file=ubuntu-server-disk.qcow2,format=qcow2,if=virtio \
   -vga virtio
 ```
 
 ## Você agora tem uma VM com seu próprio kernel
 
 E só utilizou ferramentas **open-source**! Agora, vamos desenvolver um **driver**!
+
+## Como permitir copy-and-paste entre o host e a VM
+
+O sistema operacional dentro da VM não está configurado para redirecionar sua saída corretamente para o **console serial** quando o QEMU é usado no modo texto. Vou focar exclusivamente em resolver essa questão.
+
+### **O Problema**
+Quando você usa **`-vga virtio`**, o sistema operacional redireciona a saída para a interface gráfica da VM. Ao usar **`-nographic`**, ele precisa enviar a saída para o console serial (**ttyS0**), mas não está configurado para isso.
+
+### Configurando sua VM para rodar em uma Janela Terminal
+
+Isso é ótimo pois você pode copiar e colar do seu host para sua VM.
+
+#### Corrija o Redirecionamento do Console Serial
+
+Para que o sistema operacional funcione com `-nographic`, ele precisa estar configurado para redirecionar sua saída para o console serial (**ttyS0**).
+
+Siga os passos abaixo para ajustar isso sem depender de interfaces gráficas.
+
+#### Passo 1: Inicialize a VM com `-vga virtio`:
+
+Use o comando que funciona para inicializar a VM com a interface gráfica:
+```bash
+qemu-system-x86_64 \
+  -enable-kvm \
+  -m 2048 \
+  -cpu host \
+  -smp 2 \
+  -drive file=ubuntu-server-disk.qcow2,format=qcow2,if=virtio \
+  -vga virtio
+```
+
+Dentro da VM, execute os comandos abaixo.
+
+#### Passo 2: Configure o Console Serial
+
+Dentro da VM (com o sistema operacional carregado):
+
+1. Edite o arquivo **`/etc/default/grub`**:
+   ```bash
+   sudo nano /etc/default/grub
+   ```
+
+2. Encontre a linha:
+   ```plaintext
+   GRUB_CMDLINE_LINUX_DEFAULT="quiet splash"
+   ```
+
+3. Substitua por:
+   ```plaintext
+   GRUB_CMDLINE_LINUX_DEFAULT="console=ttyS0"
+   ```
+
+4. Atualize o GRUB:
+   ```bash
+   sudo update-grub
+   ```
+
+#### Passo 3: Tente Inicializar com `-nographic`
+
+Após configurar o sistema para redirecionar a saída ao **ttyS0**, inicialize novamente com:
+
+```bash
+qemu-system-x86_64 \
+  -enable-kvm \
+  -m 2048 \
+  -cpu host \
+  -smp 2 \
+  -drive file=ubuntu-server-disk.qcow2,format=qcow2,if=virtio \
+  -nographic \
+  -serial mon:stdio
+```
+
