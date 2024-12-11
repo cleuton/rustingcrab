@@ -8,3 +8,4 @@
 2. [**Estrutura**](./lição%202%20-%20Estrutura/) - [**pdf**](./lição%201%20-%20Estrutura/licao02.pdf) - [**Vídeo**](https://youtu.be/ZLOtPwL88OA?si=lCYr89gtXHQx1u85).
 3. [**Desafio**](./lição%203%20-%20Desafio%201/) - [**pdf**](./lição%203%20-%20Desafio%201/licao03.pdf) - [**Vídeo**](https://youtu.be/kVgdgc2-zFg?si=hELcvNdAmTsxmjdx).
 4. [**Variáveis**](./lição%204%20-%20correção%20e%20variáveis/) - [**pdf**](./lição%204%20-%20correção%20e%20variáveis/licao04.pdf) - [**Vídeo**](https://youtu.be/oxr49nxb6Mg)
+5. [**Mais Variáveis**](./lição%205%20-%20mais%20sobre%20variáveis/) - [**pdf**](./lição%205%20-%20mais%20sobre%20variáveis/licao05.pdf) - [**Vídeo**](https://youtu.be/gKt48oiE8Ro?si=RBdn5tuLfO-jhITc)

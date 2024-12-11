@@ -8,7 +8,7 @@
 
 [**Menu do curso**](../)
 
-[**VÍDEO DESTA AULA**]()
+[**VÍDEO DESTA AULA**](https://youtu.be/gKt48oiE8Ro)
 
 # Mais sobre variáveis
 
