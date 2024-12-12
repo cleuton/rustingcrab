@@ -21,7 +21,7 @@ fn main() {
         .window_setup(WindowSetup::default().title("Ferrus Hunter!"))
         .window_mode(WindowMode::default().dimensions(1024.0, 768.0))
         .build()
-        .expect("aieee, could not create ggez context!");
+        .expect("Não foi possível criar o contexto do jogo!");
 
     // Posiciona a janela do jogo:no centro do monitor
     let context = &ctx.gfx;
