@@ -76,8 +76,6 @@ fn main() {
 
     // Inicia o loop de eventos do jogo
     event::run(ctx, loop_eventos, jogo);
-
-
 }
 
 struct Cenario {
@@ -121,6 +119,13 @@ struct PropriedadesComuns {
     velocidade: f32,
     invertido: bool,
     saiu_de_cena: bool,
+    altura_atual: f32,
+    pulando: bool,
+    caindo: bool,
+    limite_pulo: f32,
+    posicao_vertical_original: f32,
+    recuando: bool,
+    acelerando: bool,
 }
 
 impl GameObject for PropriedadesComuns {
@@ -152,26 +157,12 @@ impl GameObject for PropriedadesComuns {
 struct Ferris {
     // Aqui você define o estado do Ferris: Posições, velocidades, etc.
     propriedades: PropriedadesComuns,
-    altura_atual: f32,
-    pulando: bool,
-    caindo: bool,
-    limite_pulo: f32,   
-    posicao_vertical_original:  f32,
-    recuando: bool,
-    acelerando: bool,
 }
 
 impl Ferris {
-    pub fn new(propriedades: PropriedadesComuns, limite_pulo: f32) -> Ferris {
+    pub fn new(propriedades: PropriedadesComuns) -> Ferris {
         Ferris {
             propriedades: propriedades.clone(),
-            altura_atual: propriedades.posicao.y,
-            pulando: false,
-            caindo: false,
-            limite_pulo: limite_pulo,
-            posicao_vertical_original: propriedades.posicao.y,
-            recuando: false,
-            acelerando: false,
         }
     }
 }
@@ -181,37 +172,37 @@ impl GameObject for Ferris {
         // O Ferris é um player portanto não usa a impl das propriedades comuns
         // Ele pode pular (SETA PARA CIMA) ou recuar (SETA PARA ESQUERDA).
 
-        if self.pulando {
-            if self.caindo {
+        if self.propriedades.pulando {
+            if self.propriedades.caindo {
                 self.propriedades.posicao.y = self.propriedades.posicao.y + FERRIS_VELOCIDADE_PULO * dt.as_secs_f32();
-                if self.propriedades.posicao.y >= self.posicao_vertical_original {
-                    self.propriedades.posicao.y = self.posicao_vertical_original;
-                    self.pulando = false;
-                    self.caindo = false;
+                if self.propriedades.posicao.y >= self.propriedades.posicao_vertical_original {
+                    self.propriedades.posicao.y = self.propriedades.posicao_vertical_original;
+                    self.propriedades.pulando = false;
+                    self.propriedades.caindo = false;
                 }
             } else {
                 self.propriedades.posicao.y = self.propriedades.posicao.y - FERRIS_VELOCIDADE_PULO * dt.as_secs_f32();
-                if self.propriedades.posicao.y <= self.limite_pulo {
-                    self.caindo = true;
+                if self.propriedades.posicao.y <= self.propriedades.limite_pulo {
+                    self.propriedades.caindo = true;
                 }
             }
-        } else if self.recuando {
-            if self.acelerando {
+        } else if self.propriedades.recuando {
+            if self.propriedades.acelerando {
                 self.propriedades.posicao.x = self.propriedades.posicao.x + self.propriedades.velocidade * dt.as_secs_f32();
                 if self.propriedades.posicao.x >= 200.0 {
                     self.propriedades.posicao.x = 200.0;
-                    self.recuando = false;
-                    self.acelerando = false;
+                    self.propriedades.recuando = false;
+                    self.propriedades.acelerando = false;
                 }
             } else {
                 self.propriedades.posicao.x = self.propriedades.posicao.x - self.propriedades.velocidade * dt.as_secs_f32();
                 if self.propriedades.posicao.x <=  0.0 {
-                    self.acelerando = true;
+                    self.propriedades.acelerando = true;
                 }
             }
         }
 
-        if !self.pulando && !self.recuando {
+        if !self.propriedades.pulando && !self.propriedades.recuando {
             self.propriedades.segundos_para_virar = self.propriedades.segundos_para_virar + dt.as_secs_f32();
             if self.propriedades.segundos_para_virar >= SEGUNDOS_PARA_VIRAR  {
                 self.propriedades.invertido = !self.propriedades.invertido;
@@ -225,6 +216,22 @@ impl GameObject for Ferris {
         self.propriedades.colidiu(outro)
     }
 }   
+
+struct Cobra {
+    propriedades: PropriedadesComuns,
+}
+
+impl GameObject for Cobra {
+    fn update(&mut self, dt: std::time::Duration) {
+        // Atualize o estado do gameobject
+        self.propriedades.update(dt);
+    }
+
+    fn colidiu(&self, outro: &PropriedadesComuns) -> bool {
+        // Verifique se houve colisão
+        self.propriedades.colidiu(outro)
+    }
+}
 
 struct Jogo {
     // Aqui você define o estado do jogo: Posições, velocidades, etc.
@@ -257,8 +264,15 @@ impl Jogo {
             velocidade: 200.0,
             invertido: false,
             saiu_de_cena: false,
+            altura_atual: ALTURA_SOLO - TEMP_CRAB_ALTURA,
+            pulando: false,
+            caindo: false,
+            limite_pulo: FERRIS_LIMITE_ALTURA,
+            posicao_vertical_original: ALTURA_SOLO - TEMP_CRAB_ALTURA,
+            recuando: false,
+            acelerando: false,
         };
-        let player = Ferris::new(propriedades, FERRIS_LIMITE_ALTURA as f32);
+        let player = Ferris::new(propriedades);
         Jogo {
             // ...
             background: background,
@@ -347,15 +361,15 @@ impl EventHandler for Jogo {
     fn key_down_event(&mut self, _ctx: &mut Context, input: KeyInput, _repeat: bool)  -> GameResult {
         match input.keycode {
             Some(KeyCode::Up) => {
-                if !self.player.pulando {
-                    self.player.pulando = true;
-                    self.player.caindo = false;
+                if !self.player.propriedades.pulando {
+                    self.player.propriedades.pulando = true;
+                    self.player.propriedades.caindo = false;
                 }
             },
             Some(KeyCode::Left) => {
-                if !self.player.recuando && !self.player.pulando {
-                    self.player.recuando = true;
-                    self.player.acelerando = false;
+                if !self.player.propriedades.recuando && !self.player.propriedades.pulando {
+                    self.player.propriedades.recuando = true;
+                    self.player.propriedades.acelerando = false;
                 }
             },
             _ => (),
