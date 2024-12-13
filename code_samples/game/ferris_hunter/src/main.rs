@@ -7,6 +7,7 @@ use ggez::graphics::{self, Color};
 use ggez::event::{self, EventHandler};
 use ggez::conf::{WindowSetup, WindowMode};
 use ggez::winit::dpi::PhysicalPosition;
+use ggez::input::keyboard::{KeyCode, KeyInput};
 use rdev::{display_size};
 
 // Constantes globais de configuração do Jogo: 
@@ -19,6 +20,8 @@ const TEMP_CRAB_ALTURA: f32 = 55.0;
 const VELOCIDADE_CENARIO: f32 = 50.0;
 const SEGUNDOS_ENTRE_CENARIO: f32 = 5.0;
 const SEGUNDOS_PARA_VIRAR: f32 = 1.0;
+const FERRIS_LIMITE_ALTURA: f32 = 250.0;
+const FERRIS_VELOCIDADE_PULO: f32 = 300.0;
 
 // Funções auxiliares
 
@@ -107,6 +110,7 @@ trait GameObject {
     fn colidiu(&self, outro: &PropriedadesComuns) -> bool;
 }
 
+#[derive(Clone)]
 struct PropriedadesComuns {
     imagem1: graphics::Image,
     imagem2: graphics::Image,
@@ -148,12 +152,26 @@ impl GameObject for PropriedadesComuns {
 struct Ferris {
     // Aqui você define o estado do Ferris: Posições, velocidades, etc.
     propriedades: PropriedadesComuns,
+    altura_atual: f32,
+    pulando: bool,
+    caindo: bool,
+    limite_pulo: f32,   
+    posicao_vertical_original:  f32,
+    recuando: bool,
+    acelerando: bool,
 }
 
 impl Ferris {
-    pub fn new(propriedades: PropriedadesComuns) -> Ferris {
+    pub fn new(propriedades: PropriedadesComuns, limite_pulo: f32) -> Ferris {
         Ferris {
-            propriedades: propriedades,
+            propriedades: propriedades.clone(),
+            altura_atual: propriedades.posicao.y,
+            pulando: false,
+            caindo: false,
+            limite_pulo: limite_pulo,
+            posicao_vertical_original: propriedades.posicao.y,
+            recuando: false,
+            acelerando: false,
         }
     }
 }
@@ -161,11 +179,45 @@ impl Ferris {
 impl GameObject for Ferris {
     fn update(&mut self, dt: std::time::Duration) {
         // O Ferris é um player portanto não usa a impl das propriedades comuns
-        self.propriedades.segundos_para_virar = self.propriedades.segundos_para_virar + dt.as_secs_f32();
-        if self.propriedades.segundos_para_virar >= SEGUNDOS_PARA_VIRAR  {
-            self.propriedades.invertido = !self.propriedades.invertido;
-            self.propriedades.segundos_para_virar = 0.0;
-        }            
+        // Ele pode pular (SETA PARA CIMA) ou recuar (SETA PARA ESQUERDA).
+
+        if self.pulando {
+            if self.caindo {
+                self.propriedades.posicao.y = self.propriedades.posicao.y + FERRIS_VELOCIDADE_PULO * dt.as_secs_f32();
+                if self.propriedades.posicao.y >= self.posicao_vertical_original {
+                    self.propriedades.posicao.y = self.posicao_vertical_original;
+                    self.pulando = false;
+                    self.caindo = false;
+                }
+            } else {
+                self.propriedades.posicao.y = self.propriedades.posicao.y - FERRIS_VELOCIDADE_PULO * dt.as_secs_f32();
+                if self.propriedades.posicao.y <= self.limite_pulo {
+                    self.caindo = true;
+                }
+            }
+        } else if self.recuando {
+            if self.acelerando {
+                self.propriedades.posicao.x = self.propriedades.posicao.x + self.propriedades.velocidade * dt.as_secs_f32();
+                if self.propriedades.posicao.x >= 200.0 {
+                    self.propriedades.posicao.x = 200.0;
+                    self.recuando = false;
+                    self.acelerando = false;
+                }
+            } else {
+                self.propriedades.posicao.x = self.propriedades.posicao.x - self.propriedades.velocidade * dt.as_secs_f32();
+                if self.propriedades.posicao.x <=  0.0 {
+                    self.acelerando = true;
+                }
+            }
+        }
+
+        if !self.pulando && !self.recuando {
+            self.propriedades.segundos_para_virar = self.propriedades.segundos_para_virar + dt.as_secs_f32();
+            if self.propriedades.segundos_para_virar >= SEGUNDOS_PARA_VIRAR  {
+                self.propriedades.invertido = !self.propriedades.invertido;
+                self.propriedades.segundos_para_virar = 0.0;
+            }            
+        }
     }
 
     fn colidiu(&self, outro: &PropriedadesComuns) -> bool {
@@ -195,6 +247,18 @@ impl Jogo {
         carga_cenario.push(graphics::Image::from_path(_ctx, "/poste.png").unwrap());   
         carga_cenario.push(graphics::Image::from_path(_ctx, "/arvore.png").unwrap());   
         let ferris1 =  graphics::Image::from_path(_ctx, "/crab1.png").unwrap();
+        let propriedades = PropriedadesComuns {
+            imagem1: graphics::Image::from_path(_ctx, "/crab1.png").unwrap(),
+            imagem2: graphics::Image::from_path(_ctx, "/crab2.png").unwrap(),
+            posicao: Vec2::new(200.0, ALTURA_SOLO - TEMP_CRAB_ALTURA),
+            largura: TEMP_CRAB_LARGURA,
+            altura: TEMP_CRAB_ALTURA,
+            segundos_para_virar: 0.0,
+            velocidade: 200.0,
+            invertido: false,
+            saiu_de_cena: false,
+        };
+        let player = Ferris::new(propriedades, FERRIS_LIMITE_ALTURA as f32);
         Jogo {
             // ...
             background: background,
@@ -204,17 +268,7 @@ impl Jogo {
             cenarios: Vec::new(),
             segundos_ultimo_cenario: SEGUNDOS_ENTRE_CENARIO,
             indice_ultimo_cenario: -1,
-            player: Ferris::new(PropriedadesComuns {
-                imagem1: graphics::Image::from_path(_ctx, "/crab1.png").unwrap(),
-                imagem2: graphics::Image::from_path(_ctx, "/crab2.png").unwrap(),
-                posicao: Vec2::new(200.0, ALTURA_SOLO - TEMP_CRAB_ALTURA),
-                largura: TEMP_CRAB_LARGURA,
-                altura: TEMP_CRAB_ALTURA,
-                segundos_para_virar: 0.0,
-                velocidade: 50.0,
-                invertido: false,
-                saiu_de_cena: false,
-            }),
+            player: player,
         }
     }
 }
@@ -286,6 +340,26 @@ impl EventHandler for Jogo {
         } else {
             canvas.draw(&self.player.propriedades.imagem1, graphics::DrawParam::default().dest(self.player.propriedades.posicao));
         }
-        canvas.finish(ctx)
+        canvas.finish(ctx);
+        Ok(())
+    }
+
+    fn key_down_event(&mut self, _ctx: &mut Context, input: KeyInput, _repeat: bool)  -> GameResult {
+        match input.keycode {
+            Some(KeyCode::Up) => {
+                if !self.player.pulando {
+                    self.player.pulando = true;
+                    self.player.caindo = false;
+                }
+            },
+            Some(KeyCode::Left) => {
+                if !self.player.recuando && !self.player.pulando {
+                    self.player.recuando = true;
+                    self.player.acelerando = false;
+                }
+            },
+            _ => (),
+        }
+        Ok(())
     }
 }
