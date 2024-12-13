@@ -18,6 +18,23 @@ const TEMP_CRAB_LARGURA: f32 = 80.0;
 const TEMP_CRAB_ALTURA: f32 = 55.0;
 const VELOCIDADE_CENARIO: f32 = 50.0;
 const SEGUNDOS_ENTRE_CENARIO: f32 = 5.0;
+const SEGUNDOS_PARA_VIRAR: f32 = 1.0;
+
+// Funções auxiliares
+
+fn intercecao_retangulos(canto_superior_esquerdo1: Vec2, 
+                         canto_inferior_direito1: Vec2,
+                         canto_superior_esquerdo2: Vec2,
+                         canto_inferior_direito2: Vec2) -> bool {
+    // Verifica se dois retângulos se interceptam
+    if canto_superior_esquerdo1.x < canto_inferior_direito2.x &&
+        canto_inferior_direito1.x > canto_superior_esquerdo2.x &&
+        canto_superior_esquerdo1.y < canto_inferior_direito2.y &&
+        canto_inferior_direito1.y > canto_superior_esquerdo2.y {
+            return true;
+        }
+    false
+}
 
 fn main() {
 
@@ -85,6 +102,78 @@ impl Cenario {
     }
 }
 
+trait GameObject {
+    fn update(&mut self, dt: std::time::Duration);
+    fn colidiu(&self, outro: &PropriedadesComuns) -> bool;
+}
+
+struct PropriedadesComuns {
+    imagem1: graphics::Image,
+    imagem2: graphics::Image,
+    posicao: Vec2,
+    largura: f32,
+    altura: f32,
+    segundos_para_virar: f32,
+    velocidade: f32,
+    invertido: bool,
+    saiu_de_cena: bool,
+}
+
+impl GameObject for PropriedadesComuns {
+    fn update(&mut self, dt: std::time::Duration) {
+        // Atualize o estado do gameobject
+        self.posicao.x -= self.velocidade * dt.as_secs_f32();
+        self.segundos_para_virar = self.segundos_para_virar + dt.as_secs_f32();
+        if self.posicao.x <= -1.0 * self.largura {
+            self.saiu_de_cena = true;
+        } else {
+            if self.segundos_para_virar >= SEGUNDOS_PARA_VIRAR  {
+                self.invertido = !self.invertido;
+                self.segundos_para_virar = 0.0;
+            }            
+        }
+    }
+
+    fn colidiu(&self, outro: &PropriedadesComuns) -> bool {
+        // Verifique se houve colisão
+        let canto_inferior_direito1 = self.posicao + Vec2::new(self.largura, self.altura);
+        let canto_inferior_direito2 = outro.posicao + Vec2::new(outro.largura, outro.altura);   
+        if intercecao_retangulos(self.posicao, canto_inferior_direito1, outro.posicao, canto_inferior_direito2) {
+            return true;
+        }
+        false
+    }
+}
+
+struct Ferris {
+    // Aqui você define o estado do Ferris: Posições, velocidades, etc.
+    propriedades: PropriedadesComuns,
+}
+
+impl Ferris {
+    pub fn new(propriedades: PropriedadesComuns) -> Ferris {
+        Ferris {
+            propriedades: propriedades,
+        }
+    }
+}
+
+impl GameObject for Ferris {
+    fn update(&mut self, dt: std::time::Duration) {
+        // O Ferris é um player portanto não usa a impl das propriedades comuns
+        self.propriedades.segundos_para_virar = self.propriedades.segundos_para_virar + dt.as_secs_f32();
+        if self.propriedades.segundos_para_virar >= SEGUNDOS_PARA_VIRAR  {
+            self.propriedades.invertido = !self.propriedades.invertido;
+            self.propriedades.segundos_para_virar = 0.0;
+        }            
+    }
+
+    fn colidiu(&self, outro: &PropriedadesComuns) -> bool {
+        // Verifique se houve colisão
+        self.propriedades.colidiu(outro)
+    }
+}   
+
 struct Jogo {
     // Aqui você define o estado do jogo: Posições, velocidades, etc.
     background: graphics::Image,
@@ -94,6 +183,7 @@ struct Jogo {
     cenarios: Vec<Cenario>,
     segundos_ultimo_cenario: f32,
     indice_ultimo_cenario: i32,
+    player: Ferris,
 }
 
 impl Jogo {
@@ -114,6 +204,17 @@ impl Jogo {
             cenarios: Vec::new(),
             segundos_ultimo_cenario: SEGUNDOS_ENTRE_CENARIO,
             indice_ultimo_cenario: -1,
+            player: Ferris::new(PropriedadesComuns {
+                imagem1: graphics::Image::from_path(_ctx, "/crab1.png").unwrap(),
+                imagem2: graphics::Image::from_path(_ctx, "/crab2.png").unwrap(),
+                posicao: Vec2::new(200.0, ALTURA_SOLO - TEMP_CRAB_ALTURA),
+                largura: TEMP_CRAB_LARGURA,
+                altura: TEMP_CRAB_ALTURA,
+                segundos_para_virar: 0.0,
+                velocidade: 50.0,
+                invertido: false,
+                saiu_de_cena: false,
+            }),
         }
     }
 }
@@ -156,6 +257,10 @@ impl EventHandler for Jogo {
             self.cenarios.push(cenario);
             self.segundos_ultimo_cenario = 0.0;
         }
+
+        // Atualizando o player:
+        self.player.update(self.dt);
+
         self.segundos_ultimo_cenario += segundos.as_secs_f32();
         Ok(())
     }
@@ -176,8 +281,11 @@ impl EventHandler for Jogo {
                 canvas.draw(&cenario.imagem, graphics::DrawParam::default().dest(cenario.posicao));
             }
         }
-
-        canvas.draw(&self.crab1, graphics::DrawParam::default().dest(Vec2::new(200.0, ALTURA_SOLO - TEMP_CRAB_ALTURA)));
+        if self.player.propriedades.invertido {
+            canvas.draw(&self.player.propriedades.imagem2, graphics::DrawParam::default().dest(self.player.propriedades.posicao));
+        } else {
+            canvas.draw(&self.player.propriedades.imagem1, graphics::DrawParam::default().dest(self.player.propriedades.posicao));
+        }
         canvas.finish(ctx)
     }
 }
