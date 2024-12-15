@@ -14,6 +14,8 @@
 
 A lição passada foi *punk* não? Bom, espero que essa seja mais suave para você... 
 
+**Esta lição tem `exercícios`!*** Procure no repo a pasta `exercicio`, leia e faça o exercício. A pasta `correcao` tem a correção deles. Clone o repositório para ficar mais fácil. 
+
 Você já ouviu falar em **pattern matching** (correspondência de padrões)? Em Rust, o `match` é uma construção de controle de fluxo poderosa que permite comparar um valor contra uma série de padrões e executar código com base no primeiro padrão que corresponder. É semelhante a um `switch` em outras linguagens, mas com muito mais flexibilidade e segurança.
 
 Vamos a um exemplo: 
