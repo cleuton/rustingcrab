@@ -1,6 +1,7 @@
 /* Game template para usar ggez - Cleuton Sampaio*/
 
 use std::{env, path};
+use std::time::Instant;
 use rand::{thread_rng, Rng};
 use ggez::{Context, ContextBuilder, GameResult, glam::*};
 use ggez::graphics::{self, Color};
@@ -15,13 +16,13 @@ const TAMANHO_CENARIO: f32 = 300.0;
 const LARGURA_CENA: f32 = 1024.0;
 const ALTURA_SOLO: f32 = 568.0;
 const ALTURA_CENARIO: f32 = ALTURA_SOLO - TAMANHO_CENARIO;
-const TEMP_CRAB_LARGURA: f32 = 80.0;
 const TEMP_CRAB_ALTURA: f32 = 55.0;
 const VELOCIDADE_CENARIO: f32 = 50.0;
 const SEGUNDOS_ENTRE_CENARIO: f32 = 5.0;
 const SEGUNDOS_PARA_VIRAR: f32 = 1.0;
-const FERRIS_LIMITE_ALTURA: f32 = 250.0;
 const FERRIS_VELOCIDADE_PULO: f32 = 300.0;
+const VELOCIDADE_NPC: f32 = 200.0;
+const TEMPO_MINIMO_LANCAMENTO_NPC: f64 = 5.0;
 
 // Funções auxiliares
 
@@ -34,6 +35,7 @@ fn intercecao_retangulos(canto_superior_esquerdo1: Vec2,
         canto_inferior_direito1.x > canto_superior_esquerdo2.x &&
         canto_superior_esquerdo1.y < canto_inferior_direito2.y &&
         canto_inferior_direito1.y > canto_superior_esquerdo2.y {
+            println!("Colisão! Cantos: {:?} {:?} {:?} {:?}", canto_superior_esquerdo1, canto_inferior_direito1, canto_superior_esquerdo2, canto_inferior_direito2);
             return true;
         }
     false
@@ -106,6 +108,8 @@ impl Cenario {
 trait GameObject {
     fn update(&mut self, dt: std::time::Duration);
     fn colidiu(&self, outro: &PropriedadesComuns) -> bool;
+    fn desenhar(&self, canvas: &mut graphics::Canvas);
+    fn obter_propriedades(&mut self) -> &mut PropriedadesComuns;
 }
 
 #[derive(Clone)]
@@ -126,6 +130,37 @@ struct PropriedadesComuns {
     posicao_vertical_original: f32,
     recuando: bool,
     acelerando: bool,
+}
+
+impl PropriedadesComuns {
+    fn new(_ctx: &mut Context,
+        im1: &str, 
+        im2: &str,
+        posicao: Vec2,
+        ) -> PropriedadesComuns {
+            let i1 = graphics::Image::from_path(_ctx, im1).unwrap();
+            let i2 = graphics::Image::from_path(_ctx, im2).unwrap();
+            let largura = i1.width() as f32; // extrai largura antes de mover i1
+            let altura = i1.height() as f32; // extrai altura antes de mover i1
+            PropriedadesComuns {
+                imagem1: i1,
+                imagem2: i2,
+                posicao: posicao,
+                largura: largura,
+                altura: altura,
+                segundos_para_virar: SEGUNDOS_PARA_VIRAR,
+                velocidade: VELOCIDADE_NPC,
+                invertido: false,
+                saiu_de_cena: false,
+                altura_atual: 0.0,
+                pulando: false,
+                caindo: false,
+                limite_pulo: 0.0,
+                posicao_vertical_original: posicao.y,
+                recuando: false,
+                acelerando: false,
+            }
+    }
 }
 
 impl GameObject for PropriedadesComuns {
@@ -151,6 +186,18 @@ impl GameObject for PropriedadesComuns {
             return true;
         }
         false
+    }
+
+    fn desenhar(&self, canvas: &mut graphics::Canvas) {
+        if self.invertido {
+            canvas.draw(&self.imagem2, graphics::DrawParam::default().dest(self.posicao));
+        } else {
+            canvas.draw(&self.imagem1, graphics::DrawParam::default().dest(self.posicao));
+        }
+    }
+    
+    fn obter_propriedades(&mut self) -> &mut PropriedadesComuns {
+        self
     }
 }
 
@@ -215,10 +262,26 @@ impl GameObject for Ferris {
         // Verifique se houve colisão
         self.propriedades.colidiu(outro)
     }
+
+    fn desenhar(&self, canvas: &mut graphics::Canvas) {
+        self.propriedades.desenhar(canvas);
+    }
+
+    fn obter_propriedades(&mut self) -> &mut PropriedadesComuns {
+        &mut self.propriedades
+    }
 }   
 
 struct Cobra {
     propriedades: PropriedadesComuns,
+}
+
+impl Cobra {
+    pub fn new(propriedades: PropriedadesComuns) -> Cobra {
+        Cobra {
+            propriedades: propriedades.clone(),
+        }
+    }
 }
 
 impl GameObject for Cobra {
@@ -231,67 +294,86 @@ impl GameObject for Cobra {
         // Verifique se houve colisão
         self.propriedades.colidiu(outro)
     }
+
+    fn desenhar(&self, canvas: &mut graphics::Canvas) {
+        self.propriedades.desenhar(canvas);
+    }
+
+    fn obter_propriedades(&mut self) -> &mut PropriedadesComuns {
+        &mut self.propriedades
+    }
 }
 
 struct Jogo {
     // Aqui você define o estado do jogo: Posições, velocidades, etc.
     background: graphics::Image,
     imagens_cenario: Vec<graphics::Image>,
-    crab1: graphics::Image,
     dt: std::time::Duration, // Intervalo de tempo entre frames
     cenarios: Vec<Cenario>,
     segundos_ultimo_cenario: f32,
     indice_ultimo_cenario: i32,
     player: Ferris,
+    estoque_npcs: Vec<PropriedadesComuns>,
+    npcs: Vec<Box<dyn GameObject>>,
+    ultima_vez_npc_lancado: Instant,
+    terminou: bool,
 }
 
 impl Jogo {
     pub fn new(_ctx: &mut Context) -> Jogo {
-        // Carregue / crie recursos como imagens aqui.
+
+        // Carregue / crie recursos aqui.
         let background = graphics::Image::from_path(_ctx, "/scene.png").unwrap();
         let mut carga_cenario = Vec::new();
         carga_cenario.push(graphics::Image::from_path(_ctx, "/arbusto.png").unwrap());   
         carga_cenario.push(graphics::Image::from_path(_ctx, "/poste.png").unwrap());   
         carga_cenario.push(graphics::Image::from_path(_ctx, "/arvore.png").unwrap());   
-        let ferris1 =  graphics::Image::from_path(_ctx, "/crab1.png").unwrap();
-        let propriedades = PropriedadesComuns {
-            imagem1: graphics::Image::from_path(_ctx, "/crab1.png").unwrap(),
-            imagem2: graphics::Image::from_path(_ctx, "/crab2.png").unwrap(),
-            posicao: Vec2::new(200.0, ALTURA_SOLO - TEMP_CRAB_ALTURA),
-            largura: TEMP_CRAB_LARGURA,
-            altura: TEMP_CRAB_ALTURA,
-            segundos_para_virar: 0.0,
-            velocidade: 200.0,
-            invertido: false,
-            saiu_de_cena: false,
-            altura_atual: ALTURA_SOLO - TEMP_CRAB_ALTURA,
-            pulando: false,
-            caindo: false,
-            limite_pulo: FERRIS_LIMITE_ALTURA,
-            posicao_vertical_original: ALTURA_SOLO - TEMP_CRAB_ALTURA,
-            recuando: false,
-            acelerando: false,
-        };
-        let player = Ferris::new(propriedades);
+        let propriedades_ferris = PropriedadesComuns::new(_ctx, "/crab1.png", 
+                                                            "/crab2.png", 
+                                                            Vec2::new(200.0, ALTURA_SOLO - TEMP_CRAB_ALTURA));
+        let player = Ferris::new(propriedades_ferris);
+        
         Jogo {
             // ...
             background: background,
             imagens_cenario: carga_cenario,
-            crab1: ferris1,
             dt: std::time::Duration::new(0, 0),
             cenarios: Vec::new(),
             segundos_ultimo_cenario: SEGUNDOS_ENTRE_CENARIO,
             indice_ultimo_cenario: -1,
             player: player,
+            estoque_npcs: Jogo::pre_carregar_estoque_npcs(_ctx),
+            npcs: Vec::new(),
+            ultima_vez_npc_lancado: Instant::now(),
+            terminou: false,
         }
+    }
+
+    fn pre_carregar_estoque_npcs(_ctx: &mut Context) -> Vec<PropriedadesComuns> {
+
+        let mut estoque: Vec<PropriedadesComuns> = Vec::new();
+        // Carregar NPCs
+        let propriedades_cobra = PropriedadesComuns::new(_ctx, "/cobra1.png", 
+                                                            "/cobra2.png", 
+                                                            Vec2::new(1024.0, ALTURA_SOLO - 31.0));
+        let cobra = Cobra::new(propriedades_cobra);
+        estoque.push(cobra.propriedades.clone());
+        estoque
     }
 }
 
 impl EventHandler for Jogo {
     fn update(&mut self, ctx: &mut Context) -> GameResult {
+
+        // terminou o jogo?
+        if self.terminou {
+            return Ok(());
+        }
+
         // Código para atualizar os gameobjects...
         self.dt = ctx.time.delta(); // Intervalo de tempo entre frames
         let segundos = 1 * self.dt; // 1 segundo vezes o intervalo de tempo
+        let mut rng = thread_rng();
 
         let mut cenarios_a_remover = Vec::new();
         // Atualizando os elementos do cenário:
@@ -310,7 +392,6 @@ impl EventHandler for Jogo {
         }
 
         // Adicionando elementos ao cenário:
-        let mut rng = thread_rng();
         if self.segundos_ultimo_cenario > SEGUNDOS_ENTRE_CENARIO {
             let mut indice: usize;
             loop {
@@ -329,7 +410,44 @@ impl EventHandler for Jogo {
         // Atualizando o player:
         self.player.update(self.dt);
 
+        // Atualizando NPCs:
+        let mut npcs_a_remover: Vec<i32> = Vec::new();
+        for i in 0..self.npcs.len() {
+            let npc = &mut self.npcs[i];
+            npc.update(self.dt);
+            if npc.colidiu(&self.player.propriedades) {
+                println!("NPC: {:?}", npc.obter_propriedades().posicao);
+                println!("Player: {:?}", self.player.propriedades.posicao);
+                self.terminou = true;
+                println!("Colisão com NPC!");
+                return Ok(());
+            }
+
+            if npc.obter_propriedades().saiu_de_cena {
+                npcs_a_remover.push(i as i32);
+            }
+        }
+
+        // Devemos lançar novos NPCs?
+        let tempo_decorrido_ultimo_npc = self.ultima_vez_npc_lancado.elapsed().as_secs_f64();
+        if tempo_decorrido_ultimo_npc >= TEMPO_MINIMO_LANCAMENTO_NPC {
+            if rng.gen_range(0..2) == 1 {
+                let indice = rng.gen_range(0..self.estoque_npcs.len());
+                let npc = Box::new(self.estoque_npcs[indice].clone());
+                self.npcs.push(npc);
+            }
+            self.ultima_vez_npc_lancado = Instant::now();
+        }
+
+        // Atualizando segundos do último cenário:
         self.segundos_ultimo_cenario += segundos.as_secs_f32();
+
+        // Removendo NPCs:
+        for i in npcs_a_remover {
+            self.npcs.remove(i as usize);
+            println!("NPC removido! Tamanho {}", self.npcs.len());
+        }
+
         Ok(())
     }
 
@@ -349,13 +467,20 @@ impl EventHandler for Jogo {
                 canvas.draw(&cenario.imagem, graphics::DrawParam::default().dest(cenario.posicao));
             }
         }
-        if self.player.propriedades.invertido {
-            canvas.draw(&self.player.propriedades.imagem2, graphics::DrawParam::default().dest(self.player.propriedades.posicao));
-        } else {
-            canvas.draw(&self.player.propriedades.imagem1, graphics::DrawParam::default().dest(self.player.propriedades.posicao));
+
+        // Desenhando o player:
+        self.player.desenhar(&mut canvas);
+
+        // Desenhando NPCs:
+        for npc in &mut self.npcs {
+            npc.desenhar(&mut canvas);
         }
-        canvas.finish(ctx);
-        Ok(())
+
+        if self.terminou {
+
+        }
+
+        canvas.finish(ctx)
     }
 
     fn key_down_event(&mut self, _ctx: &mut Context, input: KeyInput, _repeat: bool)  -> GameResult {
