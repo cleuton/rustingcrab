@@ -18,7 +18,7 @@ Este é o lugar para você **enferrujar** com classe! Exemplos, cursos e até op
 
 - [**trait, Box e dyn**](./trait-box-polimorfismo/): Entenda os elementos e como se relacionam com o **polimorfismo** em Rust.
 
-- [**Game design, traits, structs e polimorfismo**](./code_samples/game/): Aprenda esses conceitos com o game **Ferris Hunter**.
+- [**Game design, traits, structs e polimorfismo**](https://github.com/cleuton/rustingcrab/tree/main/code_samples/game): Aprenda esses conceitos com o game **Ferris Hunter**.
 
 ## Exemplos de códigos
 
