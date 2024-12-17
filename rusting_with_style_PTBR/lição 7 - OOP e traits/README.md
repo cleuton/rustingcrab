@@ -8,7 +8,7 @@
 
 [**Menu do curso**](../)
 
-[**VÍDEO DESTA AULA**]()
+[**VÍDEO DESTA AULA**](https://youtu.be/ezg_8E_5_Ys)
 
 # Orientação a objetos e traits
 
@@ -190,3 +190,7 @@ Neste exemplo simples usamos `Box` para armazenar vários tipos de animais que i
 A coleção **animais** é **polimórfica** pois armazena ponteiros dinâmicos para instâncias de **trait objects**. 
 
 Nesse exemplo, tanto `Cachorro` como `Gato` implementam **Animal**, e são armazenados em `Box<dyn Animal>` dentro de um `Vec`, permitindo que tipos diferentes coabitem na mesma coleção e sejam acessados de forma uniforme via o `trait`.
+
+## Exemplo mais detalhado
+
+Vamos examinar o **game** [**Ferris Hunter**](https://github.com/cleuton/rustingcrab/tree/main/code_samples/game), que eu fiz em Rust para dar um exemplo disso tudo. 
