@@ -4,7 +4,7 @@ use std::{env, path};
 use std::time::Instant;
 use rand::{thread_rng, Rng};
 use ggez::{Context, ContextBuilder, GameResult, glam::*};
-use ggez::graphics::{self, Color};
+use ggez::graphics::{self, Color, PxScale, Text, TextFragment};
 use ggez::event::{self, EventHandler};
 use ggez::conf::{WindowSetup, WindowMode};
 use ggez::winit::dpi::PhysicalPosition;
@@ -87,7 +87,7 @@ struct Cenario {
 }
 
 impl Cenario {
-    pub fn new(imagem: graphics::Image, posicao: Vec2) -> Cenario {
+    fn new(imagem: graphics::Image, posicao: Vec2) -> Cenario {
         Cenario {
             imagem: imagem,
             posicao: posicao,
@@ -95,7 +95,7 @@ impl Cenario {
         }
     }
 
-    pub fn update(&mut self, dt: std::time::Duration) {
+    fn update(&mut self, dt: std::time::Duration) {
         // Atualize o estado do elemento de cenário
         self.posicao.x -= VELOCIDADE_CENARIO * dt.as_secs_f32();
         if self.posicao.x <= -300.0 {
@@ -204,7 +204,7 @@ struct Ferris {
 }
 
 impl Ferris {
-    pub fn new(propriedades: PropriedadesComuns) -> Ferris {
+    fn new(propriedades: PropriedadesComuns) -> Ferris {
         Ferris {
             propriedades: propriedades.clone(),
         }
@@ -274,7 +274,7 @@ struct Cobra {
 }
 
 impl Cobra {
-    pub fn new(propriedades: PropriedadesComuns) -> Cobra {
+    fn new(propriedades: PropriedadesComuns) -> Cobra {
         Cobra {
             propriedades: propriedades.clone(),
         }
@@ -306,7 +306,7 @@ struct Gopher {
 }
 
 impl Gopher {
-    pub fn new(propriedades: PropriedadesComuns) -> Gopher {
+    fn new(propriedades: PropriedadesComuns) -> Gopher {
         Gopher {
             propriedades: propriedades.clone(),
         }
@@ -374,7 +374,7 @@ struct Xicara {
 }
 
 impl Xicara {
-    pub fn new(propriedades: PropriedadesComuns) -> Xicara {
+    fn new(propriedades: PropriedadesComuns) -> Xicara {
         let mut rng = thread_rng();
         let altura = rng.gen_range(80..(ALTURA_SOLO-80.0) as i32) as f32;
         let mut xicara = Xicara {
@@ -418,13 +418,16 @@ struct Jogo {
     npcs: Vec<Box<dyn GameObject>>,
     ultima_vez_npc_lancado: Instant,
     terminou: bool,
+    explosao: graphics::Image,
+    segundos_totais: f32,
 }
 
 impl Jogo {
-    pub fn new(_ctx: &mut Context) -> Jogo {
+    fn new(_ctx: &mut Context) -> Jogo {
 
         // Carregue / crie recursos aqui.
         let background = graphics::Image::from_path(_ctx, "/scene.png").unwrap();
+        let explosao = graphics::Image::from_path(_ctx, "/explosao.png").unwrap();
         let mut carga_cenario = Vec::new();
         carga_cenario.push(graphics::Image::from_path(_ctx, "/arbusto.png").unwrap());   
         carga_cenario.push(graphics::Image::from_path(_ctx, "/poste.png").unwrap());   
@@ -446,8 +449,21 @@ impl Jogo {
             npcs: Vec::new(),
             ultima_vez_npc_lancado: Instant::now(),
             terminou: false,
+            explosao: explosao,
+            segundos_totais: 0.0,
         }
-    }    
+    }   
+    
+    fn reiniciar(&mut self, _ctx: &mut Context) {
+        // Inicialize o estado do jogo
+        let propriedades_ferris = PropriedadesComuns::new(_ctx, "/crab1.png", 
+        "/crab2.png", 
+        Vec2::new(200.0, ALTURA_SOLO - TEMP_CRAB_ALTURA));
+        self.player = Ferris::new(propriedades_ferris);
+        self.npcs = Vec::new();
+        self.segundos_totais = 0.0;
+        self.terminou = false;
+    }
 }
 
 impl EventHandler for Jogo {
@@ -461,6 +477,7 @@ impl EventHandler for Jogo {
         // Código para atualizar os gameobjects...
         self.dt = ctx.time.delta(); // Intervalo de tempo entre frames
         let segundos = 1 * self.dt; // 1 segundo vezes o intervalo de tempo
+        self.segundos_totais += segundos.as_secs_f32();
         let mut rng = thread_rng();
 
         let mut cenarios_a_remover = Vec::new();
@@ -560,6 +577,39 @@ impl EventHandler for Jogo {
         // Desenhando o cenário de fundo:
         let onde = Vec2::new(0.0, 0.0); 
         canvas.draw(&self.background, graphics::DrawParam::default().dest(onde));
+        
+        if self.terminou {
+            canvas.draw(&self.explosao, graphics::DrawParam::default().dest(self.player.propriedades.posicao));
+            let help1 = Text::new(TextFragment {
+                text: "<ENTER> Novo jogo, <ESC> terminar".to_string(),
+                color: Some(Color::new(1.0, 1.0, 1.0, 1.0)),
+                font: Some("LiberationMono-Regular".into()),
+                scale: Some(PxScale::from(40.0)),
+                ..Default::default()
+            });        
+            canvas.draw(&help1, graphics::DrawParam::from(Vec2::new(50.0, ALTURA_SOLO + 120.0)));
+                
+        }
+
+        // Textos:
+        let segundos = format!("Tempo: {:.2}", self.segundos_totais);
+        let texto = Text::new(TextFragment {
+            text: segundos,
+            color: Some(Color::new(1.0, 1.0, 0.0, 1.0)),
+            font: Some("LiberationMono-Regular".into()),
+            scale: Some(PxScale::from(50.0)),
+            ..Default::default()
+        });        
+        canvas.draw(&texto, graphics::DrawParam::from(Vec2::new(50.0, ALTURA_SOLO + 30.0)));
+
+        let help = Text::new(TextFragment {
+            text: "SETA PARA CIMA: PULAR - SETA PARA ESQUERDA: RECUAR".to_string(),
+            color: Some(Color::new(0.0, 0.0, 1.0, 1.0)),
+            font: Some("LiberationMono-Regular".into()),
+            scale: Some(PxScale::from(30.0)),
+            ..Default::default()
+        });        
+        canvas.draw(&help, graphics::DrawParam::from(Vec2::new(50.0, ALTURA_SOLO + 80.0)));
 
         // Desenhando os elementos do cenário ativos:
         for cenario in &mut self.cenarios {
@@ -569,16 +619,14 @@ impl EventHandler for Jogo {
             }
         }
 
+
+
         // Desenhando o player:
         self.player.desenhar(&mut canvas);
 
         // Desenhando NPCs:
         for npc in &mut self.npcs {
             npc.desenhar(&mut canvas);
-        }
-
-        if self.terminou {
-
         }
 
         canvas.finish(ctx)
@@ -597,6 +645,12 @@ impl EventHandler for Jogo {
                     self.player.propriedades.recuando = true;
                     self.player.propriedades.acelerando = false;
                 }
+            },
+            Some(KeyCode::Return) => {
+                self.reiniciar(_ctx);
+            },
+            Some(KeyCode::Escape) => {
+                _ctx.request_quit();
             },
             _ => (),
         }
