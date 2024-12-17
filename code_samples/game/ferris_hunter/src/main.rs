@@ -20,9 +20,10 @@ const TEMP_CRAB_ALTURA: f32 = 55.0;
 const VELOCIDADE_CENARIO: f32 = 50.0;
 const SEGUNDOS_ENTRE_CENARIO: f32 = 5.0;
 const SEGUNDOS_PARA_VIRAR: f32 = 1.0;
-const FERRIS_VELOCIDADE_PULO: f32 = 300.0;
+const VELOCIDADE_PULO_GAMEOBJECTS: f32 = 300.0;
 const VELOCIDADE_NPC: f32 = 200.0;
-const TEMPO_MINIMO_LANCAMENTO_NPC: f64 = 5.0;
+const TEMPO_MINIMO_LANCAMENTO_NPC: f64 = 3.0;
+const TIPOS_NPC: i32 = 3;
 
 // Funções auxiliares
 
@@ -35,7 +36,6 @@ fn intercecao_retangulos(canto_superior_esquerdo1: Vec2,
         canto_inferior_direito1.x > canto_superior_esquerdo2.x &&
         canto_superior_esquerdo1.y < canto_inferior_direito2.y &&
         canto_inferior_direito1.y > canto_superior_esquerdo2.y {
-            println!("Colisão! Cantos: {:?} {:?} {:?} {:?}", canto_superior_esquerdo1, canto_inferior_direito1, canto_superior_esquerdo2, canto_inferior_direito2);
             return true;
         }
     false
@@ -55,7 +55,6 @@ fn main() {
     let resource_dir = if let Ok(manifest_dir) = env::var("CARGO_MANIFEST_DIR") {
         let mut path = path::PathBuf::from(manifest_dir);
         path.push("resources");
-        println!("Path de recursos: {:?}", path);
         path
     } else {
         path::PathBuf::from("./resources")
@@ -123,7 +122,6 @@ struct PropriedadesComuns {
     velocidade: f32,
     invertido: bool,
     saiu_de_cena: bool,
-    altura_atual: f32,
     pulando: bool,
     caindo: bool,
     limite_pulo: f32,
@@ -152,7 +150,6 @@ impl PropriedadesComuns {
                 velocidade: VELOCIDADE_NPC,
                 invertido: false,
                 saiu_de_cena: false,
-                altura_atual: 0.0,
                 pulando: false,
                 caindo: false,
                 limite_pulo: 0.0,
@@ -218,17 +215,17 @@ impl GameObject for Ferris {
     fn update(&mut self, dt: std::time::Duration) {
         // O Ferris é um player portanto não usa a impl das propriedades comuns
         // Ele pode pular (SETA PARA CIMA) ou recuar (SETA PARA ESQUERDA).
-
+        let velocidade_queda = VELOCIDADE_PULO_GAMEOBJECTS * 1.5 as f32;
         if self.propriedades.pulando {
             if self.propriedades.caindo {
-                self.propriedades.posicao.y = self.propriedades.posicao.y + FERRIS_VELOCIDADE_PULO * dt.as_secs_f32();
+                self.propriedades.posicao.y = self.propriedades.posicao.y + velocidade_queda * dt.as_secs_f32();
                 if self.propriedades.posicao.y >= self.propriedades.posicao_vertical_original {
                     self.propriedades.posicao.y = self.propriedades.posicao_vertical_original;
                     self.propriedades.pulando = false;
                     self.propriedades.caindo = false;
                 }
             } else {
-                self.propriedades.posicao.y = self.propriedades.posicao.y - FERRIS_VELOCIDADE_PULO * dt.as_secs_f32();
+                self.propriedades.posicao.y = self.propriedades.posicao.y - VELOCIDADE_PULO_GAMEOBJECTS * dt.as_secs_f32();
                 if self.propriedades.posicao.y <= self.propriedades.limite_pulo {
                     self.propriedades.caindo = true;
                 }
@@ -304,6 +301,111 @@ impl GameObject for Cobra {
     }
 }
 
+struct Gopher {
+    propriedades: PropriedadesComuns,
+}
+
+impl Gopher {
+    pub fn new(propriedades: PropriedadesComuns) -> Gopher {
+        Gopher {
+            propriedades: propriedades.clone(),
+        }
+    }
+}
+
+impl GameObject for Gopher {
+    fn update(&mut self, dt: std::time::Duration) {
+        // O Gopher é mais lento, mas pode pular
+        self.propriedades.posicao.x -= (self.propriedades.velocidade * 0.6) * dt.as_secs_f32();
+        if self.propriedades.posicao.x <= -1.0 * self.propriedades.largura {
+            self.propriedades.saiu_de_cena = true;
+            return;
+        } 
+        // O Gopher pode pular aleatoriamente
+        if self.propriedades.pulando {
+            if self.propriedades.caindo {
+                self.propriedades.posicao.y = self.propriedades.posicao.y + VELOCIDADE_PULO_GAMEOBJECTS * dt.as_secs_f32();
+                if self.propriedades.posicao.y >= self.propriedades.posicao_vertical_original {
+                    self.propriedades.posicao.y = self.propriedades.posicao_vertical_original;
+                    self.propriedades.pulando = false;
+                    self.propriedades.caindo = false;
+                }
+            } else {
+                self.propriedades.posicao.y = self.propriedades.posicao.y - VELOCIDADE_PULO_GAMEOBJECTS * dt.as_secs_f32();
+                if self.propriedades.posicao.y <= self.propriedades.limite_pulo {
+                    self.propriedades.caindo = true;
+                }
+            }
+        } 
+
+        if !self.propriedades.pulando {
+            self.propriedades.segundos_para_virar = self.propriedades.segundos_para_virar + dt.as_secs_f32();
+            if self.propriedades.segundos_para_virar >= SEGUNDOS_PARA_VIRAR  {
+                self.propriedades.invertido = !self.propriedades.invertido;
+                self.propriedades.segundos_para_virar = 0.0;
+            }            
+
+            // Pular aleatoriamente
+            let mut rng = thread_rng();
+            let pular = rng.gen_range(0..80);
+            if pular == 1 {
+                self.propriedades.pulando = true;
+                self.propriedades.caindo = false;
+            }
+        } 
+    }
+
+    fn colidiu(&self, outro: &PropriedadesComuns) -> bool {
+        // Verifique se houve colisão
+        self.propriedades.colidiu(outro)
+    }
+
+    fn desenhar(&self, canvas: &mut graphics::Canvas) {
+        self.propriedades.desenhar(canvas);
+    }
+
+    fn obter_propriedades(&mut self) -> &mut PropriedadesComuns {
+        &mut self.propriedades
+    }
+}
+
+struct Xicara {
+    propriedades: PropriedadesComuns,
+}
+
+impl Xicara {
+    pub fn new(propriedades: PropriedadesComuns) -> Xicara {
+        let mut rng = thread_rng();
+        let altura = rng.gen_range(80..(ALTURA_SOLO-80.0) as i32) as f32;
+        let mut xicara = Xicara {
+            propriedades: propriedades.clone(),
+        };
+        xicara.propriedades.posicao.y = altura;
+        let redutor_velocidade = rng.gen_range(1..5) as f32;
+        xicara.propriedades.velocidade = VELOCIDADE_NPC / redutor_velocidade;
+        xicara.propriedades.posicao_vertical_original = altura;
+        xicara
+    }
+}
+
+impl GameObject for Xicara  {
+    fn update(&mut self, dt: std::time::Duration) {
+        self.propriedades.update(dt);
+    }
+
+    fn colidiu(&self, outro: &PropriedadesComuns) -> bool {
+        self.propriedades.colidiu(outro)
+    }
+
+    fn desenhar(&self, canvas: &mut graphics::Canvas) {
+        self.propriedades.desenhar(canvas);
+    }
+
+    fn obter_propriedades(&mut self) -> &mut PropriedadesComuns {
+        &mut self.propriedades
+    }
+}
+
 struct Jogo {
     // Aqui você define o estado do jogo: Posições, velocidades, etc.
     background: graphics::Image,
@@ -313,7 +415,6 @@ struct Jogo {
     segundos_ultimo_cenario: f32,
     indice_ultimo_cenario: i32,
     player: Ferris,
-    estoque_npcs: Vec<PropriedadesComuns>,
     npcs: Vec<Box<dyn GameObject>>,
     ultima_vez_npc_lancado: Instant,
     terminou: bool,
@@ -342,24 +443,11 @@ impl Jogo {
             segundos_ultimo_cenario: SEGUNDOS_ENTRE_CENARIO,
             indice_ultimo_cenario: -1,
             player: player,
-            estoque_npcs: Jogo::pre_carregar_estoque_npcs(_ctx),
             npcs: Vec::new(),
             ultima_vez_npc_lancado: Instant::now(),
             terminou: false,
         }
-    }
-
-    fn pre_carregar_estoque_npcs(_ctx: &mut Context) -> Vec<PropriedadesComuns> {
-
-        let mut estoque: Vec<PropriedadesComuns> = Vec::new();
-        // Carregar NPCs
-        let propriedades_cobra = PropriedadesComuns::new(_ctx, "/cobra1.png", 
-                                                            "/cobra2.png", 
-                                                            Vec2::new(1024.0, ALTURA_SOLO - 31.0));
-        let cobra = Cobra::new(propriedades_cobra);
-        estoque.push(cobra.propriedades.clone());
-        estoque
-    }
+    }    
 }
 
 impl EventHandler for Jogo {
@@ -416,10 +504,7 @@ impl EventHandler for Jogo {
             let npc = &mut self.npcs[i];
             npc.update(self.dt);
             if npc.colidiu(&self.player.propriedades) {
-                println!("NPC: {:?}", npc.obter_propriedades().posicao);
-                println!("Player: {:?}", self.player.propriedades.posicao);
                 self.terminou = true;
-                println!("Colisão com NPC!");
                 return Ok(());
             }
 
@@ -432,9 +517,26 @@ impl EventHandler for Jogo {
         let tempo_decorrido_ultimo_npc = self.ultima_vez_npc_lancado.elapsed().as_secs_f64();
         if tempo_decorrido_ultimo_npc >= TEMPO_MINIMO_LANCAMENTO_NPC {
             if rng.gen_range(0..2) == 1 {
-                let indice = rng.gen_range(0..self.estoque_npcs.len());
-                let npc = Box::new(self.estoque_npcs[indice].clone());
-                self.npcs.push(npc);
+                let tipo = rng.gen_range(0..TIPOS_NPC);
+                match tipo {
+                    0 => {
+                        let propriedades_cobra = PropriedadesComuns::new(ctx, "/cobra1.png", "/cobra2.png", Vec2::new(1024.0, ALTURA_SOLO - 31.0));
+                        let cobra = Cobra::new(propriedades_cobra);
+                        self.npcs.push(Box::new(cobra));
+                    },
+                    1 => {
+                        let propriedades_xicara = PropriedadesComuns::new(ctx, "/xicara1.png", "/xicara2.png", Vec2::new(1024.0, ALTURA_SOLO - 60.0));
+                        let xicara = Xicara::new(propriedades_xicara);
+                        self.npcs.push(Box::new(xicara));
+                    },
+                    2 => {
+                        let mut propriedades_gopher = PropriedadesComuns::new(ctx, "/gopher1.png", "/gopher2.png", Vec2::new(1024.0, ALTURA_SOLO - 49.0));
+                        propriedades_gopher.limite_pulo = propriedades_gopher.posicao.y - 200.0;
+                        let gopher = Gopher::new(propriedades_gopher);
+                        self.npcs.push(Box::new(gopher));
+                    },
+                    _ => (),
+                }
             }
             self.ultima_vez_npc_lancado = Instant::now();
         }
@@ -445,7 +547,6 @@ impl EventHandler for Jogo {
         // Removendo NPCs:
         for i in npcs_a_remover {
             self.npcs.remove(i as usize);
-            println!("NPC removido! Tamanho {}", self.npcs.len());
         }
 
         Ok(())
