@@ -1,4 +1,23 @@
-# Uma linguagem sem garbage collector
+# Rusting with style - Curso básico de linguagem Rust
+
+<img src="../../rusting-crab-logo.png" alt="Descrição da imagem" style="height: 200px;">
+
+[**Cleuton Sampaio**](https://linkedin.com/in/cleutonsampaio)
+
+[**Veja no GitHub**](https://github.com/cleuton/rustingcrab)
+
+[**Menu do curso**](../)
+
+[**VÍDEO DESTA AULA**]()
+
+
+# Borrow check hell
+
+"Borrow Check Hell" é uma expressão utilizada pela comunidade Rust para descrever a frustração que muitos desenvolvedores enfrentam ao lidar com as rigorosas regras do *borrow checker* do Rust. O *borrow checker* é uma parte fundamental do compilador Rust que assegura a segurança de memória, garantindo que não haja referências inválidas ou concorrências inseguras no código. No entanto, essas mesmas regras podem, às vezes, tornar o desenvolvimento mais desafiador, especialmente para quem está começando ou para projetos mais complexos.
+
+Essa "agonia" ocorre principalmente quando o *borrow checker* impede que certas operações sejam realizadas porque elas violam as regras de propriedade e empréstimo do Rust. Por exemplo, tentar modificar uma estrutura de dados enquanto ainda existem referências imutáveis a ela pode resultar em erros que, embora importantes para a segurança, podem ser difíceis de resolver inicialmente. Esses erros costumam ser acompanhados de mensagens de compilação detalhadas, mas que nem sempre são fáceis de entender, aumentando a sensação de "cegueira" para o desenvolvedor.
+
+Para mitigar o "Borrow Check Hell", é essencial entender profundamente como o sistema de propriedade e empréstimo do Rust funciona. Reestruturar o código para reduzir a complexidade das referências, limitar o escopo das variáveis e utilizar ferramentas como `RefCell` ou `Rc` quando apropriado são estratégias eficazes. Além disso, com a prática e a experiência, os desenvolvedores aprendem a antecipar e evitar esses conflitos, tornando o processo de desenvolvimento mais fluido e menos frustrante. Em suma, embora o "Borrow Check Hell" represente um desafio inicial, ele é um reflexo das poderosas garantias de segurança que Rust oferece, contribuindo para a criação de softwares mais robustos e confiáveis.
 
 Vamos explicar os conceitos de **movimento**, **propriedade** e **empréstimo** em Rust de forma simples e resumida, além de abordar como eles se aplicam a tipos primitivos.
 
