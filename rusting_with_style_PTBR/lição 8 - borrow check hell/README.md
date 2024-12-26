@@ -8,7 +8,7 @@
 
 [**Menu do curso**](../)
 
-[**VÍDEO DESTA AULA**]()
+[**VÍDEO DESTA AULA**](https://youtu.be/dviLvPejeaQ)
 
 
 # Borrow check hell
