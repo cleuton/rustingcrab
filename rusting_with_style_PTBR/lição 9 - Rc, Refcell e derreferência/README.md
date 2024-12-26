@@ -8,7 +8,7 @@
 
 [**Menu do curso**](../)
 
-[**VÍDEO DESTA AULA**]()
+[**VÍDEO DESTA AULA**](https://youtu.be/q5YEQXq5eJc)
 
 
 # Rc, Refcell e derreferência de ponteiros
