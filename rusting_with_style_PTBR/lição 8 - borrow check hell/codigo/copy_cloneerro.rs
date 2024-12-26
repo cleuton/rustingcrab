@@ -1,4 +1,4 @@
-#[derive(Debug, Clone, Copy)] // Implementa `Debug`, `Clone` e `Copy` para `Ponto`
+#[derive(Debug)] // Implementa `Debug`, `Clone` e `Copy` para `Ponto`
 struct Ponto {
     x: i32,
     y: i32,
@@ -13,8 +13,4 @@ fn main() {
     println!("ponto1: {:?}", ponto1);
     println!("ponto2: {:?}", ponto2);
     
-    // Usando `Clone`
-    let ponto3 = ponto1.clone(); // Cria uma cópia explícita de `ponto1`
-    
-    println!("ponto3: {:?}", ponto3);
 }
