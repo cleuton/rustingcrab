@@ -1,0 +1,4 @@
+Conteúdo copiado: arquivo de entrada
+linha 2
+linha 3
+linha final
