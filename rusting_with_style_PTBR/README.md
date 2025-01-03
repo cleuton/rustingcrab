@@ -15,3 +15,4 @@
 9. [**Rc, RefCell e derreferência**](./lição%209%20-%20Rc,%20Refcell%20e%20derreferência/) - [**Vídeo**](https://youtu.be/q5YEQXq5eJc) - [**pdf**](./lição%209%20-%20Rc,%20Refcell%20e%20derreferência/licao09.pdf)
 10. [**Programação funcional**](./lição%2010%20-%20Programação%20funcional%20/) - [**Vídeo**](https://youtu.be/IvIZpWQCzBI) - [**pdf**](./lição%2010%20-%20Programação%20funcional%20/aula10.pdf)
 11. [**Arquivos**](./lição%2011%20-%20Arquivos/) - [**pdf**](./lição%2011%20-%20Arquivos/licao11.pdf) - [**Vídeo**](https://youtu.be/OF2vYNIuXEM).
+12. [**Databases**](./lição%2012%20-%20databases/) - [**pdf**](./lição%2012%20-%20databases/licao12.pdf) - [**Vídeo**](https://youtu.be/_OAIX_AAIq8).
