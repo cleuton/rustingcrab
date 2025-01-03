@@ -1,0 +1,5 @@
+DROP TABLE IF EXISTS pessoas;
+CREATE TABLE pessoas (
+    id SERIAL PRIMARY KEY,
+    nome VARCHAR NOT NULL
+);

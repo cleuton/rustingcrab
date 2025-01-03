@@ -1,0 +1,8 @@
+[package]
+name = "exemplo_postgres_orm"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+diesel = { version = "2.2.6", features = ["postgres"] }
+dotenvy = "0.15"  # Usado para ler variáveis do .env
