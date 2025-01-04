@@ -1,0 +1,4 @@
+CREATE TABLE IF NOT EXISTS pessoas (
+    id SERIAL PRIMARY KEY,
+    nome VARCHAR NOT NULL
+);
