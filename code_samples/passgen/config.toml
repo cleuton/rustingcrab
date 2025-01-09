@@ -1,0 +1,12 @@
+[regra]
+caracteres_especiais = true
+maiusculas = true
+minusculas = true
+pelo_menos_um_caracter_especial = true
+pelo_menos_um_digito = true
+pelo_menos_uma_letra_maiuscula = true
+tamanho_senha = 12
+
+[senhas]
+aws = "2,ae/3F6T.4O"
+google = "VXLNy|53s?/K"
