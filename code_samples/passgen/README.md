@@ -1,9 +1,10 @@
-![](rusting-crab-logo.png)
+![](../../rusting-crab-logo.png)
 
 [**Cleuton Sampaio**](https://linkedin.com/in/cleutonsampaio) - Me siga!
+
 [**RustingCrab.com**](https://rustingcrab.com).
 
-[**Path no GitHub:**](https://github.com/cleuton/rustingcrab/tree/main/code_samples/passgen)
+[**Path no GitHub**](https://github.com/cleuton/rustingcrab/tree/main/code_samples/passgen)
 
 # Bora gerar senhas?
 
