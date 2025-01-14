@@ -1,4 +1,4 @@
-![](rusting-crab-logo.png)
+![](../../rusting-crab-logo.png)
 
 # Rusting game tech
 
