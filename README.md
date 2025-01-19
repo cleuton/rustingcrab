@@ -14,6 +14,8 @@ Este é o lugar para você **enferrujar** com classe! Exemplos, cursos e até op
 
 ## Técnicas
 
+- [**REGEX**](./code_samples/regex_helper/): Veja como analisar e usar expressões com **Regex** em Rust.
+
 - [**VM com QEMU**](./Criar%20e%20rodar%20VM%20com%20QEMU/): Crie e rode máquinas virtuais completas (com **kernel**) utilizando o **QEMU**. Assim, poderá compilar um **kernel** compatível com **Rust** e criar **device drivers** para ele. 
 
 - [**trait, Box e dyn**](./trait-box-polimorfismo/): Entenda os elementos e como se relacionam com o **polimorfismo** em Rust.
