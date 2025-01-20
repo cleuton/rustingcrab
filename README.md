@@ -14,6 +14,8 @@ Este é o lugar para você **enferrujar** com classe! Exemplos, cursos e até op
 
 ## Técnicas
 
+- [**Como criar uma DSL - Domain-specific Language simples e prática**](./code_samples/dsl/).
+
 - [**Tratamento de Null e de erro**](./code_samples/tratamento_null_erro/): Veja como tratar valores opcionais e erros.
 
 - [**REGEX**](./code_samples/regex_helper/): Veja como analisar e usar expressões com **Regex** em Rust.
