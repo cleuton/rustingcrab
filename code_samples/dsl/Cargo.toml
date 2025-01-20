@@ -1,0 +1,10 @@
+[package]
+name = "dsl_project"
+version = "0.1.0"
+edition = "2021"
+
+# Dependências do projeto
+[dependencies]
+logos = "0.12"         # Para o lexer (analisador léxico)
+nom = "7.1"            # Para o parser (analisador sintático)
+serde = { version = "1.0", features = ["derive"] }  # Para serialização/deserialização (opcional)
