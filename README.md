@@ -14,6 +14,8 @@ Este é o lugar para você **enferrujar** com classe! Exemplos, cursos e até op
 
 ## Técnicas
 
+- [**Tratamento de Null e de erro**](./code_samples/tratamento_null_erro/): Veja como tratar valores opcionais e erros.
+
 - [**REGEX**](./code_samples/regex_helper/): Veja como analisar e usar expressões com **Regex** em Rust.
 
 - [**VM com QEMU**](./Criar%20e%20rodar%20VM%20com%20QEMU/): Crie e rode máquinas virtuais completas (com **kernel**) utilizando o **QEMU**. Assim, poderá compilar um **kernel** compatível com **Rust** e criar **device drivers** para ele. 
