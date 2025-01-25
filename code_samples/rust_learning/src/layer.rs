@@ -1,6 +1,6 @@
 /*
 
-Copyright 2024 Cleuton Sampaio
+Copyright 2018 Cleuton Sampaio
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -19,83 +19,83 @@ de desempenho ou precisão. O Autor não se responsabiliza pelo seu uso e
 não fornecerá suporte. 
 */
 
-use std::vec::Vec;
 use crate::activation::Activation;
+use crate::model::Model;
 use crate::node::Node;
 use crate::sinapse::Sinapse;
-use crate::model::Model;
+use std::fmt;
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug)]
 pub struct Layer {
-    pub activation: Activation,
+    pub activation: Box<dyn Activation>,
     pub nodes: Vec<Node>,
-    pub number: usize,
+    pub number: i32,
     pub bias: Node,
 }
 
 impl Layer {
-    pub fn new(num_nodes: usize, activation: Activation, model: &mut Model) -> Self {
-        let number = model.layers.len() + 1;
-        let mut nodes = Vec::new();
+    pub fn new(num_nodes: i32, 
+        activation: impl Activation + 'static,
+        model: &mut Model) -> Layer {
+        let mut nodes: Vec<Node> = Vec::new();
         let mut bias = Node::new();
         bias.sinapses = Vec::new();
-        bias.layer_number = number;
-
-        for x in 0..num_nodes {
-            let mut node = Node::new();
-            node.sinapses = Vec::new();
-            node.layer_number = number;
-            node.node_number = x + 1;
-            nodes.push(node);
-        }
-
-        if !model.layers.is_empty() {
-            let previous = model.layers.last().unwrap();
-            for nprev in &previous.nodes {
-                for natu in &nodes {
-                    let mut sinapse = Sinapse::new();
-                    sinapse.final_node = Some(Box::new(natu.clone()));
-                    sinapse.weight = model.get_random();
-                    nprev.sinapses.borrow_mut().push(sinapse);
-                }
-            }
-
-            for natu in &nodes {
-                let mut sinapse = Sinapse::new();
-                sinapse.final_node = Some(Box::new(natu.clone()));
-                sinapse.weight = model.get_random();
-                previous.bias.sinapses.borrow_mut().push(sinapse);
-            }
-        } else {
-            model.first_layer = Some(Box::new(Layer {
-                activation: activation.clone(),
-                nodes: nodes.clone(),
-                number,
-                bias: bias.clone(),
-            }));
-        }
-
-        model.last_layer = Some(Box::new(Layer {
-            activation: activation.clone(),
-            nodes: nodes.clone(),
-            number,
-            bias: bias.clone(),
-        }));
-
-        Layer {
-            activation,
+        let number = model.layers.len() as i32 + 1;
+        let mut layer = Layer {
+            activation: Box::new(activation),
             nodes,
             number,
             bias,
+        };
+        for x in 0..num_nodes {
+            let mut node = Node::new();
+            node.sinapses = Vec::new();
+            layer.nodes.push(node);
+            node.layer_number = layer.number;
+            node.node_number = x + 1;
         }
+        // Criamos as sinapses da camada anterior, conectando esta camada à ela.
+        if model.layers.len() > 0 {
+            // A input layer não tem camada anterior
+            let previous = &model.layers[model.layers.len() - 1]; // Pega a última inserida
+            for nprev in &previous.nodes {
+                for natu in &layer.nodes {
+                    let mut sinapse = Sinapse::new();
+                    sinapse.final_node = natu.clone();
+                    sinapse.weight = model.get_random();
+                    nprev.sinapses.push(sinapse);
+                }
+            }
+            // Bias da camada anterior (um pouco de repetição, mas dá para entender bem)
+            for natu in &layer.nodes {
+                let mut sinapse = Sinapse::new();
+                sinapse.final_node = natu.clone();
+                sinapse.weight = model.get_random();
+                previous.bias.sinapses.push(sinapse);
+            }
+        } else {
+            model.first_layer = layer.clone();
+        }
+        model.last_layer = layer.clone();
+        layer
     }
 }
 
-impl ToString for Layer {
-    fn to_string(&self) -> String {
-        format!(
-            "\n[Layer. Number : {}\nBias: {:?}\nnodes:\n{:?}\n]",
-            self.number, self.bias, self.nodes
+impl fmt::Display for Layer {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(
+            f,
+            "\n[Layer. Number : {}\nBias: {}\nnodes:\n{}]",
+            self.number, self.bias, self.nodes.len()
         )
     }
 }
+
+impl PartialEq for Layer {
+    fn eq(&self, other: &Self) -> bool {
+        self.number == other.number
+    }
+}
+
+impl Eq for Layer {}
+
