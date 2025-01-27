@@ -41,7 +41,12 @@ impl Model {
                             let sinapse_weight = get_sinapse_weight(pNode_ix, node_ix);
                             final_value += previous_node_value * sinapse_weight;
                             self.nodes[node_ix].input = final_value;
-                            self.nodes[node_ix].value = layer.activation.exec(final_value);   
+                            match layer.activation {
+                                Some(activation) => {
+                                    self.nodes[node_ix].value = activation.exec(final_value);
+                                }
+                                None => {}
+                            }
                         }
                     }
                 }
@@ -93,7 +98,7 @@ impl Model {
                         new_gradient = erro * 
                         self.layers[layer_ix].activation.calcularDerivada(sinapse_final_node_value) *
                         self.nodes[node_ix].value;
-                        self.sinapses[sinapse_ix].gradient = new_gradient;  
+                        self.sinapses[sinapse_ix].gradient = new_gradient?;  
                     }  
                 } else {
                     for sinapse_ix in 0..self.nodes[node_ix].sinapses.len() {
@@ -128,4 +133,45 @@ impl Model {
             }
         }
     }
+
+    pub fn fit(&mut self, dataset: Vec<Vec<f64>>, train_count: usize, epochs: usize, learning_rate: f64) {
+        for _ in 0..epochs {
+            let mut mse = 0.0 as f64;
+            for i in 0..train_count {
+                let outputs = self.forward_pass(dataset[i].clone());
+                for j in 0..outputs.len() {
+                    mse += (dataset[i][j] - outputs[j]).powi(2);
+                }
+                self.back_propagation(dataset[i].clone(), learning_rate);
+            }
+            mse /= train_count as f64;
+        }
+    }
+
+    fn get_targets(&self, ds: &[f64]) -> Vec<f64> {
+        vec![ds[4], ds[5], ds[6]]
+    }
+
+    pub fn new(seed: Optional<usize>) -> Model {
+        let mut rng = match seed {
+            Some(seed) => rand::SeedableRng::seed_from_u64(seed as u64),
+            None => rand::thread_rng(),
+        };
+        Model {
+            layers: Vec::new(),
+            nodes: Vec::new(),
+            sinapses: Vec::new(),
+            loss_value: 0.0,
+            random: Box::new(rng),
+        }
+    }
+
+    pub fn calc_squared_errors(&self, target: &[f64], estimated: &[f64]) -> f64 {
+        let mut retorno = 0.0;
+        for y in 0..target.len() {
+            retorno += (target[y] - estimated[y]).powi(2);
+        }
+        retorno
+    }
+
 }

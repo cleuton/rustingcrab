@@ -3,12 +3,12 @@ pub struct Layer {
     pub number: usize, // Índice da layer no Model
     pub nodes: Vec<usize>,   // Índices dos Nodes que compõem a layer
     pub bias: uint,          // Índice do Node de bias
-    pub activation: Box<dyn Activation>, // Função de ativação da layer (trait object)
+    pub activation: Optional<Box<dyn Activation>>, // Função de ativação da layer (trait object)
 }
 
 impl Layer {
     pub fn new(numNodes: usize, 
-                activation: Box<dyn Activation>,
+                activation: Optional<Box<dyn Activation>>,
                 model: &mut model) -> Self {
         let number = model.layers.len();
         let mut layer = Layer {
