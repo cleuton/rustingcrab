@@ -27,6 +27,7 @@ impl Layer {
             value: 1.0,
         };
         model.nodes.push(bias);
+        layer.nodes.push(bias.node_number);
         layer.bias = bias.node_number;
 
         // Adicionando os nodes da layer
@@ -55,6 +56,22 @@ impl Layer {
                     nprev.sinapses.push(model.sinapses.len() - 1);
                 }
             }
-        } 
+        } else {
+            model.first_layer = layer.number;
+        }
+        model.last_layer = layer.number;
+    }
+}
+
+
+pub PartialEq for Layer {
+    fn eq(&self, other: &Self) -> bool {
+        self.number == other.number
+    }
+}
+
+pub fmt::Display for Layer {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "Layer {} with {} nodes", self.number, self.nodes.len())
     }
 }
