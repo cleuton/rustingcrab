@@ -1,7 +1,8 @@
-use crate::activation::Activation;
 use crate::sinapse::Sinapse;
 use crate::layer::Layer;
 use crate::node::Node;
+use rand::SeedableRng;
+use rand::rngs::StdRng;
 use rand::RngCore;
 
 pub struct Model {
@@ -9,39 +10,38 @@ pub struct Model {
     pub nodes: Vec<Node>,   // Nodes do modelo
     pub sinapses: Vec<Sinapse>, // Sinapses do modelo
     pub loss_value: f64,      // Valor da função de perda
-    pub random: Box<dyn RngCore>, // Gerador de números aleatórios
+    pub random: Box<StdRng>, // Gerador de números aleatórios
 }
 
 impl Model {
 
     pub fn forward_pass (&mut self, input: Vec<f64>) -> Vec<f64> {
         let mut output_values = Vec::new();
-        for i in 0..self.layers.len() {
-            let mut layer = &mut self.layers[i];
-            if self.first_layer == layer.number { 
+        for layer_ix in 0..self.layers.len() {
+            if 0 == layer_ix { 
                 // First layer:
-                let mut i: usize = 0 as usize;
-                for j in 0..layer.nodes.len() {
-                    let mut node = &mut self.nodes[layer.nodes[j]];
-                    node.input = input[i];
-                    node.value = input[i];
-                    i += 1;
+                let mut input_ix: usize = 0 as usize;
+                for node_ix in 0..self.layers[layer_ix].nodes.len() {
+                    let node = &mut self.nodes[self.layers[layer_ix].nodes[node_ix]];
+                    node.input = input[input_ix];
+                    node.value = input[input_ix];
+                    input_ix += 1;
                 }
             } else {
                 // All other layers:
-                for node_ix in 0..layer.nodes.len() { 
+                for node_ix in 0..self.layers[layer_ix].nodes.len() { 
                     let mut final_value: f64 = 0.0 as f64;
-                    let pLayer_ix = layer.number - 1; // avoid borrow checker
-                    for pNode_ix in 0..self.layers[pLayer_ix].nodes.len() {
-                        let previous_node_value = self.nodes[pNode_ix].value;
-                        if pNode_ix == self.layers[pLayer_ix].bias {
+                    let p_layer_ix = layer_ix - 1; // avoid borrow checker
+                    for p_node_ix in 0..self.layers[p_layer_ix].nodes.len() {
+                        let previous_node_value = self.nodes[p_node_ix].value;
+                        if p_node_ix == self.layers[p_layer_ix].bias {
                             // It is the previous' layer bias node:
-                            final_value += get_sinapse_weight(pNode_ix, node_ix);
+                            final_value += self.get_sinapse_weight(p_node_ix, node_ix);
                         } else {
-                            let sinapse_weight = get_sinapse_weight(pNode_ix, node_ix);
+                            let sinapse_weight = self.get_sinapse_weight(p_node_ix, node_ix);
                             final_value += previous_node_value * sinapse_weight;
                             self.nodes[node_ix].input = final_value;
-                            match layer.activation {
+                            match &self.layers[layer_ix].activation {
                                 Some(activation) => {
                                     self.nodes[node_ix].value = activation.exec(final_value);
                                 }
@@ -55,13 +55,14 @@ impl Model {
             
         }
         // Getting the output layer values:
-        for i in 0..self.layers[self.last_layer].nodes.len() {
-            output_values.push(self.nodes[self.layers[self.last_layer].nodes[i]].value);
+        let last_layer = self.layers.len() - 1;
+        for i in 0..self.layers[last_layer].nodes.len() {
+            output_values.push(self.nodes[self.layers[last_layer].nodes[i]].value);
         }
         output_values
     }
 
-    fn get_random(&self) -> f64 {
+    pub fn get_random(&mut self) -> f64 {
         self.random.next_u64() as f64 / u64::MAX as f64
     }
 
@@ -78,7 +79,7 @@ impl Model {
     }
 
     pub fn back_propagation(&mut self, target: Vec<f64>, learing_rate: f64) {
-        let indice_ultima = self.last_layer;
+        let indice_ultima = self.layers.len() - 1;
         let qtd_saida = self.layers[indice_ultima].nodes.len();
         let mut output_errors = vec![0.0 as f64; qtd_saida];
         let mut outputs = vec![0.0 as f64; qtd_saida];
@@ -94,11 +95,12 @@ impl Model {
                 if layer_ix == indice_ultima - 1 {
                     for sinapse_ix in 0..self.nodes[node_ix].sinapses.len() {
                         let erro = output_errors[self.sinapses[sinapse_ix].dest_node];
-                        let sinapse_final_node_value = self.nodes[self.sinapses[sinapse_ix].final_node].value;
-                        new_gradient = erro * 
-                        self.layers[layer_ix].activation.calcularDerivada(sinapse_final_node_value) *
-                        self.nodes[node_ix].value;
-                        self.sinapses[sinapse_ix].gradient = new_gradient?;  
+                        let sinapse_final_node_value = self.nodes[self.sinapses[sinapse_ix].dest_node].value;
+                        let activation = self.layers[layer_ix].activation.as_ref().expect("Activation function not found");
+                        let new_gradient = erro * 
+                            activation.calculate_derivative(sinapse_final_node_value) *
+                            self.nodes[node_ix].value;
+                        self.sinapses[sinapse_ix].gradient = new_gradient;  
                     }  
                 } else {
                     for sinapse_ix in 0..self.nodes[node_ix].sinapses.len() {
@@ -108,12 +110,13 @@ impl Model {
                             let final_node_ix = self.sinapses[sinapse_final_ix].dest_node;
                             let deltaz = output_errors[final_node_ix] *
                                          outputs[final_node_ix] *
-                                         (1 - outputs[final_node_ix]);
-                            valor_final += (deltaz * self.sinapses[sinapse_final_ix].weight);
+                                         (1 as f64 - outputs[final_node_ix]);
+                            valor_final += deltaz * self.sinapses[sinapse_final_ix].weight;
                         }
-                        let sinapse_final_node_value = self.nodes[self.sinapses[sinapse_ix].final_node].value;
+                        let sinapse_final_node_value = self.nodes[self.sinapses[sinapse_ix].dest_node].value;
+                        let activation = self.layers[layer_ix].activation.as_ref().expect("Activation function not found");
                         let new_gradient = valor_final * 
-                                            self.layers[layer_ix + 1].calcularDerivada[sinapse_final_node_value] * 
+                                            activation.calculate_derivative(sinapse_final_node_value) * 
                                             self.nodes[node_ix].value;
                         self.sinapses[sinapse_ix].gradient = new_gradient;
                     }                      
@@ -135,27 +138,28 @@ impl Model {
     }
 
     pub fn fit(&mut self, dataset: Vec<Vec<f64>>, train_count: usize, epochs: usize, learning_rate: f64) {
+        let mut mse = 0.0 as f64;
         for _ in 0..epochs {
-            let mut mse = 0.0 as f64;
             for i in 0..train_count {
                 let outputs = self.forward_pass(dataset[i].clone());
                 for j in 0..outputs.len() {
                     mse += (dataset[i][j] - outputs[j]).powi(2);
                 }
-                self.back_propagation(dataset[i].clone(), learning_rate);
+                self.back_propagation(self.get_targets(&dataset[i]), learning_rate);
             }
             mse /= train_count as f64;
         }
+        self.loss_value = mse;
     }
 
-    fn get_targets(&self, ds: &[f64]) -> Vec<f64> {
+    fn get_targets(&self, ds: &Vec<f64>) -> Vec<f64> {
         vec![ds[4], ds[5], ds[6]]
     }
 
-    pub fn new(seed: Optional<usize>) -> Model {
-        let mut rng = match seed {
-            Some(seed) => rand::SeedableRng::seed_from_u64(seed as u64),
-            None => rand::thread_rng(),
+    pub fn new(seed: Option<usize>) -> Self {
+        let rng = match seed {
+            Some(seed) => SeedableRng::seed_from_u64(seed as u64),
+            None => SeedableRng::from_entropy(),
         };
         Model {
             layers: Vec::new(),
