@@ -1,6 +1,7 @@
 use crate::sinapse::Sinapse;
 use crate::layer::Layer;
 use crate::node::Node;
+use crate::activation::Activation;
 use rand::SeedableRng;
 use rand::rngs::StdRng;
 use rand::RngCore;
@@ -15,13 +16,79 @@ pub struct Model {
 
 impl Model {
 
-    pub fn forward_pass (&mut self, input: Vec<f64>) -> Vec<f64> {
+    pub fn add_layer(&mut self, num_nodes: usize, activation: Option<Box<dyn Activation>>) {
+
+        // Cria a camada e atualiza os nós/conexões internamente
+
+        let mut layer = Layer::new(activation);
+        layer.number = self.layers.len();
+
+        // Adiciona os nós da camada ao modelo:
+
+        // bias node (exceto na primeira camada):
+        if layer.number > 0 {
+            let bias = Node {
+                layer_number: layer.number,
+                node_number: self.nodes.len(),
+                sinapses: Vec::new(),
+                input: 0.0,
+                value: 0.0,
+            };
+            layer.nodes.push(bias.node_number);
+            layer.bias = bias.node_number;
+            self.nodes.push(bias);
+        }
+        let bias = Node {
+            layer_number: layer.number,
+            node_number: self.nodes.len(),
+            sinapses: Vec::new(),
+            input: 1.0,
+            value: 1.0,
+        };
+        layer.nodes.push(bias.node_number);
+        layer.bias = bias.node_number;
+        self.nodes.push(bias);
+
+        // Outros nodes:
+        for node_ix in 0..num_nodes {
+            let node = Node {
+                layer_number: layer.number,
+                node_number: node_ix,
+                sinapses: Vec::new(),
+                input: 0.0,
+                value: 0.0,
+            };
+            layer.nodes.push(node.node_number);
+            self.nodes.push(node);
+        }
+
+        // Sinapses da camada anterior para esta
+        if layer.number > 0 {
+            let prev_layer = &self.layers[layer.number - 1];  
+            for prev_nodes_ix in 0..prev_layer.nodes.len() {
+                for node_ix in 0..layer.nodes.len() {
+                    let sinapse = Sinapse::new(prev_nodes_ix, node_ix, self.get_random());
+                    self.sinapses.push(sinapse);
+                    self.nodes[node_ix].sinapses.push(self.sinapses.len() - 1);
+                    self.nodes[prev_nodes_ix].sinapses.push(self.sinapses.len() - 1);
+                }
+            }
+        }
+
+        // Armazena a Layer (para evitar "move" antecipado):
+        self.layers.push(layer);
+    }
+
+
+
+    pub fn forward_pass (&mut self, input: &Vec<f64>) -> Vec<f64> {
         let mut output_values = Vec::new();
         for layer_ix in 0..self.layers.len() {
             if 0 == layer_ix { 
                 // First layer:
                 let mut input_ix: usize = 0 as usize;
-                for node_ix in 0..self.layers[layer_ix].nodes.len() {
+                // The first node is the bias node:
+                for node_ix in 1..self.layers[layer_ix].nodes.len() {
                     let node = &mut self.nodes[self.layers[layer_ix].nodes[node_ix]];
                     node.input = input[input_ix];
                     node.value = input[input_ix];
@@ -137,23 +204,30 @@ impl Model {
         }
     }
 
-    pub fn fit(&mut self, dataset: Vec<Vec<f64>>, train_count: usize, epochs: usize, learning_rate: f64) {
+    pub fn fit(&mut self, dataset: &[Vec<f64>], train_count: usize, epochs: usize, learning_rate: f64) {
         let mut mse = 0.0 as f64;
         for _ in 0..epochs {
             for i in 0..train_count {
-                let outputs = self.forward_pass(dataset[i].clone());
+                // Extrair features (4 primeiros elementos)
+                let input_features = &dataset[i][0..4].to_vec();
+                
+                // Extrair targets (3 últimos elementos)
+                let targets = &dataset[i][4..7].to_vec();
+                
+                // Forward pass apenas com as features
+                let outputs = self.forward_pass(&input_features);
+                
+                // Calcular MSE com os targets
                 for j in 0..outputs.len() {
-                    mse += (dataset[i][j] - outputs[j]).powi(2);
+                    mse += (targets[j] - outputs[j]).powi(2);
                 }
-                self.back_propagation(self.get_targets(&dataset[i]), learning_rate);
+                
+                // Backpropagation com os targets
+                self.back_propagation(targets.clone(), learning_rate);
             }
             mse /= train_count as f64;
         }
         self.loss_value = mse;
-    }
-
-    fn get_targets(&self, ds: &Vec<f64>) -> Vec<f64> {
-        vec![ds[4], ds[5], ds[6]]
     }
 
     pub fn new(seed: Option<usize>) -> Self {
@@ -177,5 +251,4 @@ impl Model {
         }
         retorno
     }
-
 }

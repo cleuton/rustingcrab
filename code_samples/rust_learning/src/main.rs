@@ -1,7 +1,7 @@
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 use rand::seq::SliceRandom;
-use rust_learning::{Activation, Sigmoid, Model, Layer};
+use rust_learning::{Activation, Sigmoid, Model};
 
 
 
@@ -9,9 +9,9 @@ fn main() {
     let mut model = Model::new(Some(42));
 
     // Add layers: 
-    model.layers.push(Layer::new(4, None, &mut model));
-    model.layers.push(Layer::new(8, Some(Box::new(Sigmoid{}) as Box<dyn Activation>), &mut model));
-    model.layers.push(Layer::new(3, Some(Box::new(Sigmoid{}) as Box<dyn Activation>), &mut model));
+    model.add_layer(4, None);
+    model.add_layer(8, Some(Box::new(Sigmoid{}) as Box<dyn Activation>));
+    model.add_layer(3, Some(Box::new(Sigmoid{}) as Box<dyn Activation>));
 
     for layer_idx in 0..model.layers.len() {
         let layer = &model.layers[layer_idx];
@@ -23,34 +23,34 @@ fn main() {
     }
 
     // Load dataset:
-    let irisElementos = 150 as usize;
+    let iris_elementos = 150 as usize;
     let categorias = 3 as usize;
     let variaveis = 4 as usize;
     
-    let iris = load_iris(irisElementos, categorias, variaveis); 
+    let iris = load_iris(iris_elementos, categorias, variaveis); 
 
     // Train model:
     let epochs = 1000 as usize;
     let train_count = 120 as usize;
     let learning_rate = 0.001 as f64;
 
-    model.fit(iris, train_count, epochs, learning_rate);
+    model.fit(&iris, train_count, epochs, learning_rate);
 
     // Test model:  
-    let erros = 0 as usize;
-    let contagem = 0 as usize;
-    for n in 120..irisElementos {
+    let mut erros = 0 as usize;
+    let mut contagem = 0 as usize;
+    for n in 120..iris_elementos {
         let mut testes = Vec::new();
         for i in 0..7 {
             testes.push(iris[n][i]);
         }
-        let saidas = model.forward_pass(testes);
-        println!("Entrada: {:?}", testes);
-        println!("Calculado: {:?}", saidas);
+        let saidas = model.forward_pass(&testes);
+        println!("Entrada: {:?}", &testes);
+        println!("Calculado: {:?}", &saidas);
         contagem +=1;
-        let erro = false;
+        let mut erro = false;
         for i in 0..3 {
-            if (saidas[i].round() as u32) != testes[i + 4] as u32 {
+            if (saidas[i].round() as usize) != testes[i + 4] as usize {
                 erro = true;
                 break;
             }
