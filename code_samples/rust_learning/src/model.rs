@@ -16,7 +16,7 @@ pub struct Model {
 
 impl Model {
 
-    pub fn add_layer(&mut self, num_nodes: usize, activation: Option<Box<dyn Activation>>) {
+    pub fn add_layer(&mut self, num_nodes: usize, activation: Option<Box<dyn Activation>>, ultima: bool) {
 
         // Cria a camada e atualiza os nós/conexões internamente
 
@@ -26,7 +26,7 @@ impl Model {
         // Adiciona os nós da camada ao modelo:
 
         // bias node (exceto na primeira camada):
-        if layer.number > 0 {
+        if layer.number > 0 && !ultima {
             let bias = Node {
                 layer_number: layer.number,
                 node_number: self.nodes.len(),

@@ -9,9 +9,9 @@ fn main() {
     let mut model = Model::new(Some(42));
 
     // Add layers: 
-    model.add_layer(4, None);
-    model.add_layer(8, Some(Box::new(Sigmoid{}) as Box<dyn Activation>));
-    model.add_layer(3, Some(Box::new(Sigmoid{}) as Box<dyn Activation>));
+    model.add_layer(4, None, false);
+    model.add_layer(8, Some(Box::new(Sigmoid{}) as Box<dyn Activation>), false);
+    model.add_layer(3, Some(Box::new(Sigmoid{}) as Box<dyn Activation>), true);
 
     for layer_idx in 0..model.layers.len() {
         let layer = &model.layers[layer_idx];
