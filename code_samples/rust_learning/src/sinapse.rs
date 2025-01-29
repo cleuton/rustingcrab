@@ -1,6 +1,5 @@
 use std::fmt;
 
-#[derive(Debug)]
 pub struct Sinapse {
     pub source_node: usize, // Índice do node de origem (em `model.nodes`)
     pub dest_node: usize,   // Índice do node de destino (em `model.nodes`)
@@ -30,7 +29,7 @@ impl Eq for Sinapse {}
 
 impl fmt::Display for Sinapse {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "Sinapse: Source node Index: {} destination node Index: {} weight: {} grtadient: {}",
+        write!(f, "Sinapse: Source node Index: {} destination node Index: {} weight: {} gradient: {}",
         self.source_node, self.dest_node, self.weight, self.gradient)
     }
 }

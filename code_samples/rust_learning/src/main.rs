@@ -16,9 +16,13 @@ fn main() {
     for layer_idx in 0..model.layers.len() {
         let layer = &model.layers[layer_idx];
         println!("Layer: {}", layer.number);
+        println!("Nodes: {:?}", layer.nodes);
         for node_idx in 0..layer.nodes.len() {
             let node = &model.nodes[layer.nodes[node_idx]];
             println!("Node: {} Value: {}", node.node_number, node.value);
+            for sinapse in &node.sinapses {
+                println!("Sinapse: {}", model.sinapses[*sinapse]);
+            }
         }
     }
 

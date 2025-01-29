@@ -22,7 +22,7 @@ impl Model {
 
         let mut layer = Layer::new(activation);
         layer.number = self.layers.len();
-
+        println!("add Layer number: {}", layer.number);
         // Adiciona os nós da camada ao modelo:
 
         // bias node (exceto na primeira camada):
@@ -34,43 +34,35 @@ impl Model {
                 input: 0.0,
                 value: 0.0,
             };
-            layer.nodes.push(bias.node_number);
+            println!("Bias node: {}", &bias.node_number);
             layer.bias = bias.node_number;
             self.nodes.push(bias);
         }
-        let bias = Node {
-            layer_number: layer.number,
-            node_number: self.nodes.len(),
-            sinapses: Vec::new(),
-            input: 1.0,
-            value: 1.0,
-        };
-        layer.nodes.push(bias.node_number);
-        layer.bias = bias.node_number;
-        self.nodes.push(bias);
 
         // Outros nodes:
-        for node_ix in 0..num_nodes {
+        for _node_ix in 0..num_nodes {
             let node = Node {
                 layer_number: layer.number,
-                node_number: node_ix,
+                node_number: self.nodes.len(),
                 sinapses: Vec::new(),
                 input: 0.0,
                 value: 0.0,
             };
+            println!("Node: {}", &node.node_number);
             layer.nodes.push(node.node_number);
             self.nodes.push(node);
         }
 
         // Sinapses da camada anterior para esta
         if layer.number > 0 {
-            let prev_layer = &self.layers[layer.number - 1];  
-            for prev_nodes_ix in 0..prev_layer.nodes.len() {
+            let prev_layer_ix = layer.number - 1;  
+            for prev_nodes_ix in 0..self.layers[prev_layer_ix].nodes.len() {
+                let prev_node_model_ix = self.layers[prev_layer_ix].nodes[prev_nodes_ix];
                 for node_ix in 0..layer.nodes.len() {
-                    let sinapse = Sinapse::new(prev_nodes_ix, node_ix, self.get_random());
+                    let node_model_ix = layer.nodes[node_ix];
+                    let sinapse = Sinapse::new(prev_node_model_ix, node_model_ix, self.get_random());
+                    self.nodes[prev_node_model_ix].sinapses.push(self.sinapses.len());
                     self.sinapses.push(sinapse);
-                    self.nodes[node_ix].sinapses.push(self.sinapses.len() - 1);
-                    self.nodes[prev_nodes_ix].sinapses.push(self.sinapses.len() - 1);
                 }
             }
         }
@@ -87,8 +79,8 @@ impl Model {
             if 0 == layer_ix { 
                 // First layer:
                 let mut input_ix: usize = 0 as usize;
-                // The first node is the bias node:
-                for node_ix in 1..self.layers[layer_ix].nodes.len() {
+                // Bias node is not included in layer's nodes:
+                for node_ix in 0..self.layers[layer_ix].nodes.len() {
                     let node = &mut self.nodes[self.layers[layer_ix].nodes[node_ix]];
                     node.input = input[input_ix];
                     node.value = input[input_ix];
@@ -96,7 +88,7 @@ impl Model {
                 }
             } else {
                 // All other layers:
-                for node_ix in 0..self.layers[layer_ix].nodes.len() { 
+                for node_ix in 0..self.layers[layer_ix].nodes.len()-1 { 
                     let mut final_value: f64 = 0.0 as f64;
                     let p_layer_ix = layer_ix - 1; // avoid borrow checker
                     for p_node_ix in 0..self.layers[p_layer_ix].nodes.len() {
@@ -117,12 +109,11 @@ impl Model {
                         }
                     }
                 }
- 
             }
-            
         }
         // Getting the output layer values:
         let last_layer = self.layers.len() - 1;
+        println!("Last layer Nodes len: {}", self.layers[last_layer].nodes.len());
         for i in 0..self.layers[last_layer].nodes.len() {
             output_values.push(self.nodes[self.layers[last_layer].nodes[i]].value);
         }
@@ -157,17 +148,23 @@ impl Model {
         }
         // Begin with penultimate layer:
         for layer_ix in (0..indice_ultima).rev() {
+            println!("Layer_ix 151: {}", layer_ix);
             for node_ix in 0..self.layers[layer_ix].nodes.len() {
                 // The penultimate layer is the first one to be processed:
                 if layer_ix == indice_ultima - 1 {
-                    for sinapse_ix in 0..self.nodes[node_ix].sinapses.len() {
-                        let erro = output_errors[self.sinapses[sinapse_ix].dest_node];
-                        let sinapse_final_node_value = self.nodes[self.sinapses[sinapse_ix].dest_node].value;
+                    println!("Node 155: {:?}", self.layers[layer_ix].nodes[node_ix]);
+                    let current_node_ix = self.layers[layer_ix].nodes[node_ix];
+                    println! ("Current_node 156: {}", current_node_ix);
+                    for sinapse_ix in 0..self.nodes[current_node_ix].sinapses.len() {
+                        let current_sinapse_ix = self.nodes[current_node_ix].sinapses[sinapse_ix];
+                        println!("Sinapse_ix 156: {}", self.sinapses[current_sinapse_ix]);
+                        let erro = output_errors[sinapse_ix];
+                        let sinapse_final_node_value = self.nodes[self.sinapses[current_sinapse_ix].dest_node].value;
                         let activation = self.layers[layer_ix].activation.as_ref().expect("Activation function not found");
                         let new_gradient = erro * 
                             activation.calculate_derivative(sinapse_final_node_value) *
-                            self.nodes[node_ix].value;
-                        self.sinapses[sinapse_ix].gradient = new_gradient;  
+                            self.nodes[current_node_ix].value;
+                        self.sinapses[current_sinapse_ix].gradient = new_gradient;  
                     }  
                 } else {
                     for sinapse_ix in 0..self.nodes[node_ix].sinapses.len() {
@@ -207,16 +204,17 @@ impl Model {
     pub fn fit(&mut self, dataset: &[Vec<f64>], train_count: usize, epochs: usize, learning_rate: f64) {
         let mut mse = 0.0 as f64;
         for _ in 0..epochs {
+            mse = 0.0;
             for i in 0..train_count {
                 // Extrair features (4 primeiros elementos)
                 let input_features = &dataset[i][0..4].to_vec();
                 
                 // Extrair targets (3 últimos elementos)
                 let targets = &dataset[i][4..7].to_vec();
-                
+                println!("Targets: {:?}", targets);
                 // Forward pass apenas com as features
                 let outputs = self.forward_pass(&input_features);
-                
+                println!("Outputs: {:?}", outputs);
                 // Calcular MSE com os targets
                 for j in 0..outputs.len() {
                     mse += (targets[j] - outputs[j]).powi(2);
