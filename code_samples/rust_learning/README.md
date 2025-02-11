@@ -6,7 +6,7 @@
 
 # Quando os padrões não se encaixam
 
-A ideia desse artigo surgiu depois de um pool request "turbulento" pelo qual passei. Estava trabalhando em um projeto com partes em **Rust**, e eu implementei e criei o PR. O **techlead** e outro **dev** encheram de comentários sobre **clean code** e sugeriram o uso de alguns **design patterns**. Apesar de eu dizer que nenhuma sugestão se aplicava, pois tornariam o código mais complexo, eles resolveram fazer eles mesmos. 
+A ideia desse artigo surgiu depois de um pull request "turbulento" pelo qual passei. Estava trabalhando em um projeto com partes em **Rust**, e eu implementei e criei o PR. O **techlead** e outro **dev** encheram de comentários sobre **clean code** e sugeriram o uso de alguns **design patterns**. Apesar de eu dizer que nenhuma sugestão se aplicava, pois tornariam o código mais complexo, eles resolveram fazer eles mesmos. 
 
 Então, muitos WTF depois, desistiram e voltaram à minha implementação original. 
 
