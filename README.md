@@ -14,6 +14,8 @@ Este é o lugar para você **enferrujar** com classe! Exemplos, cursos e até op
 
 ## Técnicas
 
+- [**Rede neural**](./code_samples/rust_learning/).
+
 - [**Como criar uma DSL - Domain-specific Language simples e prática**](./code_samples/dsl/).
 
 - [**Tratamento de Null e de erro**](./code_samples/tratamento_null_erro/): Veja como tratar valores opcionais e erros.
