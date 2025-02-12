@@ -14,6 +14,8 @@ Este é o lugar para você **enferrujar** com classe! Exemplos, cursos e até op
 
 ## Técnicas
 
+- [**Rede neural convolucional - CNN**](./code_samples/rust_cnn/).
+
 - [**Rede neural**](./code_samples/rust_learning/).
 
 - [**Como criar uma DSL - Domain-specific Language simples e prática**](./code_samples/dsl/).
@@ -36,6 +38,7 @@ Este é o lugar para você **enferrujar** com classe! Exemplos, cursos e até op
 - [**Password generator**](./code_samples/passgen/).
 - [**Regex Helper**](./code_samples/regex_helper/).
 - [**Redes neurais**](./code_samples/rust_learning/).
+- [**Redes convolucionais**](./code_samples/rust_cnn/).
 - [**Labirinto**](./code_samples/labirinto/): Cria e resolve labirintos.
 - [**NLL**](./code_samples/nll/): Explicação sobre Ownership, borrow e NLL.
 - [**Ray Tracing**](./code_samples/raytracing/): Demonstração da técnica de Ray Tracing para games.
