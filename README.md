@@ -30,6 +30,11 @@ Este é o lugar para você **enferrujar** com classe! Exemplos, cursos e até op
 
 ## Exemplos de códigos
 
+- [**DSL - Domain Specific Language**](./code_samples/dsl/).
+- [**Idiomatic ADT com Enum**](./code_samples/idiomatic_adt/).
+- [**Password generator**](./code_samples/passgen/).
+- [**Regex Helper**](./code_samples/regex_helper/).
+- [**Redes neurais**](./code_samples/rust_learning/).
 - [**Labirinto**](./code_samples/labirinto/): Cria e resolve labirintos.
 - [**NLL**](./code_samples/nll/): Explicação sobre Ownership, borrow e NLL.
 - [**Ray Tracing**](./code_samples/raytracing/): Demonstração da técnica de Ray Tracing para games.
