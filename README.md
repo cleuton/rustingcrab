@@ -30,6 +30,7 @@ Este é o lugar para você **enferrujar** com classe! Exemplos, cursos e até op
 
 ## Exemplos de códigos
 
+- [**Game**](./code_samples/game/).
 - [**DSL - Domain Specific Language**](./code_samples/dsl/).
 - [**Idiomatic ADT com Enum**](./code_samples/idiomatic_adt/).
 - [**Password generator**](./code_samples/passgen/).
