@@ -1,0 +1,9 @@
+[package]
+name = "wgpu-hello-world"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+wgpu = "0.14"         # ou a versão mais recente compatível
+pollster = "0.2"
+bytemuck = { version = "1.7", features = ["derive"] }

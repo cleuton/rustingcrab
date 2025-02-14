@@ -14,6 +14,8 @@ Este é o lugar para você **enferrujar** com classe! Exemplos, cursos e até op
 
 ## Técnicas
 
+- [**Zoando a GPU! Ou utilizando a GPU para cálculos**](./code_samples/wgpu/).
+
 - [**Rede neural convolucional - CNN**](./code_samples/rust_cnn/).
 
 - [**Rede neural**](./code_samples/rust_learning/).
@@ -45,6 +47,7 @@ Este é o lugar para você **enferrujar** com classe! Exemplos, cursos e até op
 - [**Shunting Yard**](./code_samples/shunting_yard/): Uso do algoritmo de Shunting Yard para converter expressões.
 - [**Sounds**](./code_samples/sounds/): Como gerar sons para games.
 - [**Structs WTF**](./code_samples/estrutura/): Para você que quer saber o básico de `structs`. 
+- [**WGPU**](./code_samples/wgpu/): Uso da GPU para cálculos em games, simulações ou **IA**.
 
 
 
