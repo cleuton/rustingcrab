@@ -14,6 +14,10 @@ Este é o lugar para você **enferrujar** com classe! Exemplos, cursos e até op
 
 ## Técnicas
 
+- **Exemplos de física 2d**: 
+    - [**Octógono giratório**](./code_samples/gravity/).
+    - [**Game runner 2d**](./code_samples/game/).
+
 - [**Zoando a GPU! Ou utilizando a GPU para cálculos**](./code_samples/wgpu/).
 
 - [**Rede neural convolucional - CNN**](./code_samples/rust_cnn/).
@@ -34,6 +38,7 @@ Este é o lugar para você **enferrujar** com classe! Exemplos, cursos e até op
 
 ## Exemplos de códigos
 
+- [**Octógono giratório**](./code_samples/gravity/).
 - [**Game**](./code_samples/game/).
 - [**DSL - Domain Specific Language**](./code_samples/dsl/).
 - [**Idiomatic ADT com Enum**](./code_samples/idiomatic_adt/).
