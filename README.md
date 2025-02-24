@@ -14,6 +14,8 @@ Este é o lugar para você **enferrujar** com classe! Exemplos, cursos e até op
 
 ## Técnicas
 
+- [**Simulações científicas**](./code_samples/life/).
+
 - **Exemplos de física 2d**: 
     - [**Octógono giratório**](./code_samples/gravity/).
     - [**Game runner 2d**](./code_samples/game/).
@@ -38,6 +40,7 @@ Este é o lugar para você **enferrujar** com classe! Exemplos, cursos e até op
 
 ## Exemplos de códigos
 
+- [**Game of Life de Conway**](./code_samples/life/).
 - [**Octógono giratório**](./code_samples/gravity/).
 - [**Game**](./code_samples/game/).
 - [**DSL - Domain Specific Language**](./code_samples/dsl/).
