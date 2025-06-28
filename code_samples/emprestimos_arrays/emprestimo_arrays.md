@@ -2,6 +2,9 @@
 
 # Arrays, empréstimos, movimentações e cópia
 
+- [**Cleuton Sampaio**](https://linkedin.com/in/cleutonsampaio).
+- [**SITE RustingCrab**](http://rustingcrab.com).
+
 É difícil entender essa questão no início e mesmo as **IAs** erram ao analisarem código **Rust** sob estes (e outros) aspectos. 
 
 ## Trait Copy
