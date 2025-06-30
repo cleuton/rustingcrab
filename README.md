@@ -44,6 +44,7 @@ Este é o lugar para você **enferrujar** com classe! Exemplos, cursos e até op
 
 ## Exemplos de códigos
 
+- [**Caleidoscópio psicodélico**](./code_samples/psycho/).
 - [**Game of Life de Conway**](./code_samples/life/).
 - [**Octógono giratório**](./code_samples/gravity/).
 - [**Game**](./code_samples/game/).
