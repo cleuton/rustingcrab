@@ -1,8 +1,8 @@
-![](../../rusting-crab-logo.png)
+<img src="../../rusting-crab-logo.png" height=300>
 
 # Tunel psicodélico
 
-![](./psycho.png)
+<img src="./psycho.png" height=300>
 
 [**Cleuton Sampaio**](https://linkedin.com/in/cleutonsampaio)
 [**REPO**](https://github.com/cleuton/rustingcrab/blob/main/code_samples/psycho)
