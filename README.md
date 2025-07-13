@@ -14,6 +14,8 @@ Este é o lugar para você **enferrujar** com classe! Exemplos, cursos e até op
 
 ## Técnicas
 
+- [**Lifetimes sem traumas**](./code_samples/lifetime/).
+
 - [**Arrays, empréstimos, movimentos e cópia**](./code_samples/emprestimos_arrays/).
 
 - [**Rust no Jupyter**](./code_samples/jupyter/).
