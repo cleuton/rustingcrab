@@ -1514,9 +1514,11 @@ O labirinto é resolvido com uma busca em profundidade (**DFS**) também baseada
 **Complexidade de tempo da resolução:**  
 Também é **O(m × n)**. Cada célula é visitada no máximo uma vez durante a busca.
 
+Você pode encontrar o [**projeto completo do labirinto aqui**](https://github.com/cleuton/rustingcrab/tree/main/code_samples/labirinto).
+
 --- 
 
-15. Dynamic Programming Patterns
+## 15) Dynamic Programming Patterns
 
 Dynamic Programming Patterns: reconhecimento de subproblemas sobrepostos e estados. Inclui “Climbing Stairs” (fibonnaci simples), “Coin Change” (moedas para formar valor) e “Longest Increasing Subsequence”, onde tabelas ajudam a evitar recomputar resultados.
 
