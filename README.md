@@ -14,7 +14,9 @@ Este é o lugar para você **enferrujar** com classe! Exemplos, cursos e até op
 
 ## Técnicas
 
-- [**Exemplos de problemas do Leetcode em Rust**](.//code_samples/leetcode/).
+- [**A\* - Algoritmos para games**](./code_samples/a_star).
+
+- [**Exemplos de problemas do Leetcode em Rust**](./code_samples/leetcode/).
 
 - [**Lifetimes sem traumas**](./code_samples/lifetime/).
 
