@@ -14,6 +14,8 @@ Este é o lugar para você **enferrujar** com classe! Exemplos, cursos e até op
 
 ## Técnicas
 
+- [**From Python with love** - Como invocar Rust a partir de código Python](./code_samples/from_python/).
+
 - [**A\* - Algoritmos para games**](./code_samples/a_star).
 
 - [**Exemplos de problemas do Leetcode em Rust**](./code_samples/leetcode/).
