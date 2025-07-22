@@ -1,119 +1,294 @@
-use image::{GrayImage, Luma, imageops};
-use imageproc::{
-    drawing::draw_line_segment_mut,
-    geometric_transformations::{rotate_about_center, Interpolation},
-};
-use rand::Rng;
+use delaunator::{Point as PontoDelaunay, triangulate};
+use std::collections::HashSet;
 
-/// 1) Gera um “rabisco” aleatório dentro de um quadrado d×d
-fn gerar_rabisco(d: u32) -> GrayImage {
-    let mut img = GrayImage::from_pixel(d, d, Luma([255]));
-    let mut rng = rand::thread_rng();
+/// Ponto 2D com coordenadas X e Y (armazenado como inteiro para Eq + Hash)
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+struct Ponto {
+    pub x: i64,
+    pub y: i64,
+}
 
-    // desenha círculos, retângulos e linhas
-    for _ in 0..(d / 4) {
-        match rng.gen_range(0..3) {
-            0 => {
-                // círculo simples
-                let x = rng.gen_range(0..d) as i32;
-                let y = rng.gen_range(0..d) as i32;
-                let r = rng.gen_range(5..(d / 8).max(6)) as i32;
-                for dx in -r..=r {
-                    for dy in -r..=r {
-                        if dx*dx + dy*dy <= r*r {
-                            let nx = x + dx; let ny = y + dy;
-                            if (0..d as i32).contains(&nx) && (0..d as i32).contains(&ny) {
-                                img.put_pixel(nx as u32, ny as u32, Luma([0]));
-                            }
-                        }
-                    }
-                }
-            }
-            1 => {
-                // linha aleatória
-                let x0 = rng.gen_range(0.0..d as f32);
-                let y0 = rng.gen_range(0.0..d as f32);
-                let x1 = rng.gen_range(0.0..d as f32);
-                let y1 = rng.gen_range(0.0..d as f32);
-                draw_line_segment_mut(&mut img, (x0, y0), (x1, y1), Luma([0]));
-            }
-            2 => {
-                // retângulo
-                let x0 = rng.gen_range(0..d);
-                let y0 = rng.gen_range(0..d);
-                let w  = rng.gen_range(5..(d/4).max(6));
-                let h  = rng.gen_range(5..(d/4).max(6));
-                for xx in x0..(x0+w).min(d) {
-                    for yy in y0..(y0+h).min(d) {
-                        img.put_pixel(xx, yy, Luma([0]));
-                    }
-                }
-            }
-            _ => {}
+impl Ponto {
+    fn novo(x: f64, y: f64) -> Self {
+        Self {
+            x: (x * 1000.0).round() as i64,
+            y: (y * 1000.0).round() as i64,
         }
     }
 
-    img
+    /// Converte para f64 novamente
+    fn para_f64(&self) -> (f64, f64) {
+        ((self.x as f64) / 1000.0, (self.y as f64) / 1000.0)
+    }
 }
 
-/// 2+3) A partir do “rabisco”, constrói um setor 2d×2d pelo espelho diagonal e vertical
-fn gerar_setor(d: u32) -> GrayImage {
-    let base = gerar_rabisco(d);
-
-    // espelha sobre a diagonal: rota 90° e depois flip horizontal
-    let diag = {
-        let rot = rotate_about_center(
-            &base,
-            std::f32::consts::PI / 2.0,
-            Interpolation::Nearest,
-            Luma([255]),
-        );
-        imageops::flip_horizontal(&rot)
-    };
-
-    // monta um bloco 2d×2d
-    let mut quad = GrayImage::from_pixel(2*d, 2*d, Luma([255]));
-    imageops::replace(&mut quad, &base, 0, 0);
-    imageops::replace(&mut quad, &diag, d as i64, 0);
-    imageops::replace(&mut quad, &imageops::flip_vertical(&diag), 0, d as i64);
-    imageops::replace(&mut quad, &imageops::flip_vertical(&base),   d as i64, d as i64);
-
-    quad
+/// Círculo com centro e raio
+#[derive(Debug, Clone, Copy)]
+struct Circulo {
+    pub centro: Ponto,
+    pub raio: f64,
 }
 
-/// 4+5) Replica o setor por rotação e aplica máscara circular
-fn montar_mandala(setor: &GrayImage, setores: usize) -> GrayImage {
-    let size = setor.width();
-    let mut mandala = GrayImage::from_pixel(size, size, Luma([255]));
-    let centro = size as f32 / 2.0;
-    let passo = 2.0 * std::f32::consts::PI / setores as f32;
-
-    for i in 0..setores {
-        let ang = i as f32 * passo;
-        let rot = rotate_about_center(setor, ang, Interpolation::Nearest, Luma([255]));
-        imageops::overlay(&mut mandala, &rot, 0, 0);
+impl Circulo {
+    fn novo(centro: Ponto, raio: f64) -> Self {
+        Self { centro, raio }
     }
 
-    // máscara circular para limpar excesso
-    for x in 0..size {
-        for y in 0..size {
-            let dx = x as f32 - centro;
-            let dy = y as f32 - centro;
-            if dx*dx + dy*dy > centro*centro {
-                mandala.put_pixel(x, y, Luma([255]));
-            }
+    /// Calcula os pontos de interseção com outro círculo
+    fn intersecta(&self, outro: &Self) -> Vec<Ponto> {
+        let (x1, y1) = self.centro.para_f64();
+        let r1 = self.raio;
+        let (x2, y2) = outro.centro.para_f64();
+        let r2 = outro.raio;
+
+        let dx = x2 - x1;
+        let dy = y2 - y1;
+        let d = ((dx * dx + dy * dy) as f64).sqrt();
+
+        // Verifica se há interseção
+        if d > r1 + r2 || d < (r1 - r2).abs() || d == 0.0 {
+            return vec![];
+        }
+
+        // Fórmula de interseção
+        let a = (r1 * r1 - r2 * r2 + d * d) / (2.0 * d);
+        let h = (r1 * r1 - a * a).sqrt();
+
+        let x0 = x1 + (a * dx) / d;
+        let y0 = y1 + (a * dy) / d;
+
+        let rx = (-h * dy) / d;
+        let ry = (h * dx) / d;
+
+        let mut pontos = vec![
+            Ponto::novo(x0 + rx, y0 + ry),
+            Ponto::novo(x0 - rx, y0 - ry),
+        ];
+
+        pontos.retain(|p| {
+            let (x, y) = p.para_f64();
+            x.is_finite() && y.is_finite()
+        });
+
+        pontos
+    }
+}
+
+/// Construtor da mandala
+struct ConstrutorMandala {
+    centro: Ponto,
+    num_camadas: usize,
+    circulos_por_camada: usize,
+    raio_base: f64,
+    incremento_raio: f64,
+    funcao_raio_circulo: Box<dyn Fn(usize) -> f64>,
+}
+
+impl ConstrutorMandala {
+    fn novo(centro: Ponto) -> Self {
+        Self {
+            centro,
+            num_camadas: 3,
+            circulos_por_camada: 8,
+            raio_base: 50.0,
+            incremento_raio: 30.0,
+            funcao_raio_circulo: Box::new(|_| 40.0),
         }
     }
 
-    mandala
+    fn num_camadas(mut self, n: usize) -> Self {
+        self.num_camadas = n;
+        self
+    }
+
+    fn circulos_por_camada(mut self, n: usize) -> Self {
+        self.circulos_por_camada = n;
+        self
+    }
+
+    fn raio_base(mut self, r: f64) -> Self {
+        self.raio_base = r;
+        self
+    }
+
+    fn incremento_raio(mut self, inc: f64) -> Self {
+        self.incremento_raio = inc;
+        self
+    }
+
+    fn funcao_raio_circulo<F>(mut self, f: F) -> Self
+    where
+        F: 'static + Fn(usize) -> f64,
+    {
+        self.funcao_raio_circulo = Box::new(f);
+        self
+    }
+
+    /// Constrói a mandala: gera triângulos a partir das interseções
+    fn construir(&self) -> Vec<Triangulo> {
+        let mut todos_pontos = HashSet::new();
+
+        let mut raio_atual = self.raio_base;
+
+        // Gera as camadas
+        let mut camadas = Vec::new();
+        for indice_camada in 0..self.num_camadas {
+            let mut circulos_camada = Vec::new();
+            let raio_circulo = (self.funcao_raio_circulo)(indice_camada);
+
+            for i in 0..self.circulos_por_camada {
+                let angulo = 2.0 * std::f64::consts::PI * (i as f64) / (self.circulos_por_camada as f64);
+                let x = self.centro.para_f64().0 + raio_atual * angulo.cos();
+                let y = self.centro.para_f64().1 + raio_atual * angulo.sin();
+                circulos_camada.push(Circulo::novo(Ponto::novo(x, y), raio_circulo));
+            }
+
+            camadas.push(circulos_camada);
+            raio_atual += self.incremento_raio;
+        }
+
+        // Calcula interseções entre camadas adjacentes
+        let mut total_intersecoes = 0;
+        for indice_camada in 0..(self.num_camadas - 1) {
+            for circulo_a in &camadas[indice_camada] {
+                for circulo_b in &camadas[indice_camada + 1] {
+                    let intersecoes = circulo_a.intersecta(circulo_b);
+                    total_intersecoes += intersecoes.len();
+                    for pt in intersecoes {
+                        todos_pontos.insert(pt);
+                    }
+                }
+            }
+        }
+
+        eprintln!("Pontos únicos gerados: {}", todos_pontos.len());
+        eprintln!("Total de interseções calculadas: {}", total_intersecoes);
+
+        if todos_pontos.is_empty() {
+            eprintln!("Nenhum ponto de interseção encontrado. Ajuste os raios ou espaçamento.");
+            return vec![];
+        }
+
+        // Converte para f64
+        let pontos_f64: Vec<(f64, f64)> = todos_pontos
+            .into_iter()
+            .map(|pt| pt.para_f64())
+            .collect();
+
+        if pontos_f64.len() < 3 {
+            eprintln!("Menos de 3 pontos — não é possível triangulação.");
+            return vec![];
+        }
+
+        // Prepara para triangulação
+        let pontos_delaunay: Vec<PontoDelaunay> = pontos_f64
+            .iter()
+            .map(|&(x, y)| PontoDelaunay { x, y })
+            .collect();
+
+        let triangulacao = triangulate(&pontos_delaunay);
+
+        // Monta triângulos
+        let mut triangulos = Vec::new();
+        for window in triangulacao.triangles.chunks(3) {
+            if window.len() == 3 {
+                triangulos.push(Triangulo {
+                    a: Ponto::novo(pontos_f64[window[0]].0, pontos_f64[window[0]].1),
+                    b: Ponto::novo(pontos_f64[window[1]].0, pontos_f64[window[1]].1),
+                    c: Ponto::novo(pontos_f64[window[2]].0, pontos_f64[window[2]].1),
+                });
+            }
+        }
+
+        triangulos
+    }
 }
 
+/// Triângulo formado por três pontos
+#[derive(Debug, Clone)]
+struct Triangulo {
+    pub a: Ponto,
+    pub b: Ponto,
+    pub c: Ponto,
+}
+
+// Função principal — entrada do programa
 fn main() {
-    let d = 200;        // tamanho do rabisco
-    let setores = 8;    // quantas fatias na mandala
+    let centro = Ponto::novo(400.0, 400.0);
 
-    let setor   = gerar_setor(d);
-    let mandala = montar_mandala(&setor, setores);
-    mandala.save("mandala.png").unwrap();
-    println!("Mandala gerada em mandala.png");
+    let mandala = ConstrutorMandala::novo(centro)
+        .num_camadas(5)
+        .circulos_por_camada(16)
+        .raio_base(80.0)
+        .incremento_raio(40.0)
+        .funcao_raio_circulo(|_| 50.0)
+        .construir();
+
+    println!("Gerados {} triângulos", mandala.len());
+
+    for (i, tri) in mandala.iter().take(5).enumerate() {
+        let (ax, ay) = tri.a.para_f64();
+        let (bx, by) = tri.b.para_f64();
+        let (cx, cy) = tri.c.para_f64();
+        println!(
+            "Triângulo {}: ({:.1},{:.1}), ({:.1},{:.1}), ({:.1},{:.1})",
+            i + 1,
+            ax, ay,
+            bx, by,
+            cx, cy
+        );
+    }
+
+    salvar_como_svg(&mandala, 800.0, 800.0, "mandala.svg");
+}
+
+/// Salva os triângulos como um arquivo SVG visível
+fn salvar_como_svg(triangulos: &[Triangulo], largura: f64, altura: f64, nome_arquivo: &str) {
+    use svg::node::element::path::Data;
+    use svg::node::element::{Circle, Path, Rectangle, SVG};
+
+    let mut documento = SVG::new()
+        .set("width", largura)
+        .set("height", altura)
+        .set("viewBox", format!("0 0 {} {}", largura, altura))
+        .add(Rectangle::new()
+            .set("width", "100%")
+            .set("height", "100%")
+            .set("fill", "black"));
+
+    for tri in triangulos {
+        let (ax, ay) = tri.a.para_f64();
+        let (bx, by) = tri.b.para_f64();
+        let (cx, cy) = tri.c.para_f64();
+
+        if ![ax, ay, bx, by, cx, cy].iter().all(|&v| v.is_finite()) {
+            continue;
+        }
+
+        let dados = Data::new()
+            .move_to((ax, ay))
+            .line_to((bx, by))
+            .line_to((cx, cy))
+            .close();
+
+        let caminho = Path::new()
+            .set("fill", "none")
+            .set("stroke", "white")
+            .set("stroke-width", 1.0)
+            .set("d", dados);
+
+        documento = documento.add(caminho);
+    }
+
+    // Marca o centro
+    documento = documento.add(
+        Circle::new()
+            .set("cx", 400)
+            .set("cy", 400)
+            .set("r", 3)
+            .set("fill", "lime"),
+    );
+
+    svg::save(nome_arquivo, &documento).unwrap();
+    eprintln!("Arquivo SVG salvo: {}", nome_arquivo);
 }
