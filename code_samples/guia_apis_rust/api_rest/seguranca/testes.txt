@@ -1,0 +1,64 @@
+# Gerar o certificado: 
+
+openssl req -x509 -newkey rsa:4096 -nodes \
+  -keyout key.pem -out cert.pem -days 365 \
+  -subj "/CN=localhost"
+
+# Iniciar o Postgres:
+
+podman run -d \
+  --name postgres_db \
+  -e POSTGRES_DB=postgres \
+  -e POSTGRES_USER=postgres \
+  -e POSTGRES_PASSWORD=password \
+  -v "$PWD/init.sql":/docker-entrypoint-initdb.d/init.sql:Z \
+  -p 5432:5432 \
+  docker.io/library/postgres:latest
+
+# Verifique se está rodando: 
+
+podman ps
+
+# Rode um select: 
+
+podman exec -it postgres_db bash
+psql -U postman
+select * from itens;
+
+# Login
+
+curl -i -k -X POST \
+-H "Content-type: application/json" \
+-d '{"usuario" : "admin", "senha" : "password"}' \
+https://localhost:3000/login
+
+
+# Obtém todos os itens: 
+
+curl -i -k -X GET \
+--cookie "token=<seu token>" \
+https://localhost:3000/itens
+
+# Criar um item: 
+
+curl -i -k -X POST \
+-H "Content-type: application/json" \
+--cookie "token=<seu token>" \
+-d '{"nome" : "morango", "quantidade" : 50}' \
+https://localhost:3000/itens
+
+# Alterar um item: 
+
+curl -i -k -X PUT \
+-H "Content-type: application/json" \
+--cookie "token=<seu token>" \
+-d '{"nome" : "morango", "quantidade" : 85}' \
+https://localhost:3000/itens/4
+
+# Apagar um item: 
+
+curl -i -k -X DELETE \
+--cookie "token=<seu token>" \
+https://localhost:3000/itens/4
+
+

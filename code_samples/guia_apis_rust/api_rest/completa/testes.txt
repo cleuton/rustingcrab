@@ -1,0 +1,44 @@
+# Iniciar o Postgres:
+
+podman run -d \
+  --name postgres_db \
+  -e POSTGRES_DB=postgres \
+  -e POSTGRES_USER=postgres \
+  -e POSTGRES_PASSWORD=password \
+  -v "$PWD/init.sql":/docker-entrypoint-initdb.d/init.sql:Z \
+  -p 5432:5432 \
+  docker.io/library/postgres:latest
+
+# Verifique se está rodando: 
+
+podman ps
+
+# Rode um select: 
+
+podman exec -it postgres_db bash
+psql -U postman
+select * from itens;
+
+# Obtém todos os itens: 
+
+curl -i -X GET http://localhost:3000/itens
+
+# Criar um item: 
+
+curl -i -X POST \
+-H "Content-type: application/json" \
+-d '{"nome" : "morango", "quantidade" : 50}' \
+http://localhost:3000/itens
+
+# Alterar um item: 
+
+curl -i -X PUT \
+-H "Content-type: application/json" \
+-d '{"nome" : "morango", "quantidade" : 85}' \
+http://localhost:3000/itens/4
+
+# Apagar um item: 
+
+curl -i -X DELETE http://localhost:3000/itens/4
+
+
