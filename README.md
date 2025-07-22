@@ -14,6 +14,8 @@ Este é o lugar para você **enferrujar** com classe! Exemplos, cursos e até op
 
 ## Técnicas
 
+- [**Guia de APIs em Rust** - Como criar APIs em Rust - Rest, GraphQL, Websockets e gRPC](./code_samples/guia_apis_rust/).
+
 - [**From Python with love** - Como invocar Rust a partir de código Python](./code_samples/from_python/).
 
 - [**A\* - Algoritmos para games**](./code_samples/a_star).
