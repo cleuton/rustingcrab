@@ -16,3 +16,7 @@ Este é um **ebook** interativo, com código-fonte disponível para você utiliz
 
 Veremos [**como criar containers**](./containers/) com **Podman** para compilar / distribuir nossas APIs de maneira simples e prática. 
 
+## API Rest
+
+Agora, veremos [**como criar API REST completa em Rust**](./api_rest/), incluindo **TSL** e **JWT**. 
+
