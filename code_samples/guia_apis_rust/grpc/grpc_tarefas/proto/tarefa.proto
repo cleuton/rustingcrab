@@ -1,0 +1,26 @@
+syntax = "proto3";
+package tarefa;
+
+// Serviço de gerenciamento de tarefas
+service TarefaService {
+  // Retorna todas as tarefas
+  rpc Listar (ListaTarefasRequest) returns (ListaTarefasResponse);
+  // Adiciona uma tarefa e devolve a criada
+  rpc Criar (CriarTarefaRequest) returns (Tarefa);
+}
+
+message Tarefa {
+  int32 id = 1;
+  string descricao = 2;
+  bool concluida = 3;
+}
+
+message ListaTarefasRequest {}
+
+message ListaTarefasResponse {
+  repeated Tarefa tarefas = 1;
+}
+
+message CriarTarefaRequest {
+  string descricao = 1;
+}

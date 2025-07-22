@@ -23,3 +23,7 @@ Agora, veremos [**como criar API REST completa em Rust**](./api_rest/), incluind
 ## GraphQL
 
 E podemos criar **API** em **GraphQL** também! [**Veja só esse tutorial de GraphQL**](./graphql/)!. 
+
+## gRPC
+
+Quando o assundo é comunicação binária, podemos usar gRPC! Veja esse [**tutorial que cria servidor Rust e cliente Python**](./grpc/)!
