@@ -20,3 +20,6 @@ Veremos [**como criar containers**](./containers/) com **Podman** para compilar 
 
 Agora, veremos [**como criar API REST completa em Rust**](./api_rest/), incluindo **TSL** e **JWT**. 
 
+## GraphQL
+
+E podemos criar **API** em **GraphQL** também! [**Veja só esse tutorial de GraphQL**](./graphql/)!. 

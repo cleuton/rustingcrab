@@ -1,0 +1,12 @@
+[package]
+name    = "graphql_api"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+tokio             = { version = "1", features = ["macros","rt-multi-thread"] }
+axum              = "0.6.20"
+async-graphql     = "6.0.6"
+async-graphql-axum= "6.0.6"
+serde             = { version = "1.0", features = ["derive"] }
+tower-http        = { version = "0.3", features = ["cors"] }

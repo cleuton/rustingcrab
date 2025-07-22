@@ -1,0 +1,14 @@
+# Query: 
+
+curl -X POST http://127.0.0.1:4000/graphql   -H "Content-Type: application/json"   --data '{ 
+    "query": "query { usuarios { id nome } }" 
+  }'
+
+
+# Mutation: 
+
+curl -X POST http://127.0.0.1:4000/graphql \
+  -H "Content-Type: application/json" \
+  --data '{ 
+    "query": "mutation { criarUsuario(id: 3, nome: \"Beltrano\") { id nome } }" 
+  }'
