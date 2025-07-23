@@ -1,0 +1,18 @@
+[package]
+name = "zaptidgen-rust"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+axum = { version = "0.7", features = ["json"] }
+serde = { version = "1.0", features = ["derive"] }
+tokio = { version = "1.0", features = ["rt-multi-thread", "net", "sync"] }
+sonyflake = "0.2"
+
+[profile.release]
+lto = "fat"
+opt-level = 3
+codegen-units = 1
+panic = "abort"
+strip = true
+incremental = false

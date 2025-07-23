@@ -1,0 +1,44 @@
+{
+  "go_fasthttp": {
+    "k6": {
+      "min_response_time": 123.931,
+      "max_response_time": 986.478,
+      "avg_response_time": 371.3738507462686,
+      "std_response_time": 133.65981774472516,
+      "total_requests": 67,
+      "success_rate": 100.0
+    },
+    "resources": {
+      "min_cpu": 1.6,
+      "max_cpu": 20.9,
+      "avg_cpu": 4.403092783505154,
+      "std_cpu": 2.5784141447250497,
+      "min_memory": 6054.0,
+      "max_memory": 6130.0,
+      "avg_memory": 6077.742268041237,
+      "std_memory": 16.3205381539868
+    },
+    "binary_size": 7638749
+  },
+  "rust_axum": {
+    "k6": {
+      "min_response_time": 150.791,
+      "max_response_time": 573.4979999999999,
+      "avg_response_time": 355.31047761194026,
+      "std_response_time": 97.15076993820797,
+      "total_requests": 67,
+      "success_rate": 100.0
+    },
+    "resources": {
+      "min_cpu": 1.7,
+      "max_cpu": 7.9,
+      "avg_cpu": 3.710309278350515,
+      "std_cpu": 1.3969076365376425,
+      "min_memory": 6040.0,
+      "max_memory": 6233.0,
+      "avg_memory": 6064.340206185567,
+      "std_memory": 33.66869422461136
+    },
+    "binary_size": 870976
+  }
+}
