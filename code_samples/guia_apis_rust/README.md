@@ -27,3 +27,7 @@ E podemos criar **API** em **GraphQL** também! [**Veja só esse tutorial de Gra
 ## gRPC
 
 Quando o assundo é comunicação binária, podemos usar gRPC! Veja esse [**tutorial que cria servidor Rust e cliente Python**](./grpc/)!
+
+## Websocket
+
+E agora vamos ver como criar uma [**API de baixa latência com Websocket!**](./websocket/)

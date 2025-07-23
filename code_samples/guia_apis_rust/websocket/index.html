@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat em Tempo Real</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        .container {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 20px;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        
+        #tela-entrada {
+            text-align: center;
+        }
+        
+        #nome-usuario {
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            width: 200px;
+            margin-right: 10px;
+        }
+        
+        #botao-entrar {
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        #botao-entrar:hover {
+            background-color: #45a049;
+        }
+        
+        #chat-container {
+            display: none;
+        }
+        
+        #mensagens {
+            height: 400px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 10px;
+            margin-bottom: 10px;
+            background-color: #fafafa;
+        }
+        
+        .mensagem {
+            margin-bottom: 10px;
+            padding: 8px;
+            border-radius: 4px;
+        }
+        
+        .mensagem-sistema {
+            background-color: #e3f2fd;
+            color: #1976d2;
+        }
+        
+        .mensagem-chat {
+            background-color: #f1f8e9;
+        }
+        
+        .usuario {
+            font-weight: bold;
+            color: #388e3c;
+        }
+        
+        .horario {
+            font-size: 0.8em;
+            color: #999;
+            float: right;
+        }
+        
+        #formulario-mensagem {
+            display: flex;
+        }
+        
+        #entrada-mensagem {
+            flex: 1;
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        
+        #botao-enviar {
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #2196F3;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+        
+        #botao-enviar:hover {
+            background-color: #1976d2;
+        }
+        
+        #status {
+            text-align: center;
+            padding: 10px;
+            margin-top: 10px;
+            border-radius: 4px;
+        }
+        
+        .conectado {
+            background-color: #e8f5e9;
+            color: #388e3c;
+        }
+        
+        .desconectado {
+            background-color: #ffebee;
+            color: #d32f2f;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Chat em Tempo Real</h1>
+        
+        <div id="tela-entrada">
+            <h2>Entre no Chat</h2>
+            <input type="text" id="nome-usuario" placeholder="Digite seu nome" maxlength="20">
+            <button id="botao-entrar">Entrar</button>
+        </div>
+        
+        <div id="chat-container">
+            <div id="status" class="desconectado">Desconectado</div>
+            <div id="mensagens"></div>
+            <form id="formulario-mensagem">
+                <input type="text" id="entrada-mensagem" placeholder="Digite sua mensagem..." maxlength="200">
+                <button type="submit" id="botao-enviar">Enviar</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Elementos da interface
+        const telaEntrada = document.getElementById('tela-entrada');
+        const chatContainer = document.getElementById('chat-container');
+        const nomeUsuarioInput = document.getElementById('nome-usuario');
+        const botaoEntrar = document.getElementById('botao-entrar');
+        const mensagensDiv = document.getElementById('mensagens');
+        const formularioMensagem = document.getElementById('formulario-mensagem');
+        const entradaMensagem = document.getElementById('entrada-mensagem');
+        const botaoEnviar = document.getElementById('botao-enviar');
+        const statusDiv = document.getElementById('status');
+
+        // Variáveis do WebSocket
+        let websocket = null;
+        let nomeUsuario = '';
+
+        // Função para conectar ao WebSocket
+        function conectarWebSocket() {
+            // Conectar ao servidor WebSocket
+            websocket = new WebSocket('ws://127.0.0.1:3030/ws');
+            
+            // Quando a conexão é aberta
+            websocket.onopen = function(event) {
+                console.log('Conectado ao servidor WebSocket');
+                statusDiv.textContent = 'Conectado';
+                statusDiv.className = 'conectado';
+                
+                // Enviar mensagem de entrada
+                const mensagemEntrada = {
+                    tipo: 'entrada',
+                    usuario: nomeUsuario
+                };
+                websocket.send(JSON.stringify(mensagemEntrada));
+            };
+            
+            // Quando recebe uma mensagem
+            websocket.onmessage = function(event) {
+                const dados = JSON.parse(event.data);
+                adicionarMensagem(dados);
+            };
+            
+            // Quando a conexão é fechada
+            websocket.onclose = function(event) {
+                console.log('Conexão WebSocket fechada');
+                statusDiv.textContent = 'Desconectado';
+                statusDiv.className = 'desconectado';
+            };
+            
+            // Quando ocorre um erro
+            websocket.onerror = function(error) {
+                console.error('Erro no WebSocket:', error);
+                statusDiv.textContent = 'Erro de conexão';
+                statusDiv.className = 'desconectado';
+            };
+        }
+
+        // Função para adicionar mensagem à interface
+        function adicionarMensagem(dados) {
+            const divMensagem = document.createElement('div');
+            
+            if (dados.tipo === 'UsuarioEntrou') {
+                divMensagem.className = 'mensagem mensagem-sistema';
+                divMensagem.textContent = `${dados.usuario} entrou no chat`;
+            } 
+            else if (dados.tipo === 'UsuarioSaiu') {
+                divMensagem.className = 'mensagem mensagem-sistema';
+                divMensagem.textContent = `${dados.usuario} saiu do chat`;
+            } 
+            else if (dados.tipo === 'MensagemChat') {
+                divMensagem.className = 'mensagem mensagem-chat';
+                const horario = new Date(dados.horario).toLocaleTimeString();
+                divMensagem.innerHTML = `
+                    <span class="usuario">${dados.usuario}:</span> 
+                    ${dados.texto}
+                    <span class="horario">${horario}</span>
+                `;
+            }
+            
+            mensagensDiv.appendChild(divMensagem);
+            mensagensDiv.scrollTop = mensagensDiv.scrollHeight;
+        }
+
+        // Evento para entrar no chat
+        botaoEntrar.addEventListener('click', function() {
+            nomeUsuario = nomeUsuarioInput.value.trim();
+            if (nomeUsuario) {
+                telaEntrada.style.display = 'none';
+                chatContainer.style.display = 'block';
+                conectarWebSocket();
+            } else {
+                alert('Por favor, digite um nome de usuário.');
+            }
+        });
+
+        // Evento para enviar mensagem
+        formularioMensagem.addEventListener('submit', function(event) {
+            event.preventDefault();
+            
+            const texto = entradaMensagem.value.trim();
+            if (texto && websocket && websocket.readyState === WebSocket.OPEN) {
+                const mensagem = {
+                    tipo: 'mensagem',
+                    usuario: nomeUsuario,
+                    texto: texto
+                };
+                
+                websocket.send(JSON.stringify(mensagem));
+                entradaMensagem.value = '';
+            }
+        });
+
+        // Permitir envio com Enter
+        nomeUsuarioInput.addEventListener('keypress', function(event) {
+            if (event.key === 'Enter') {
+                botaoEntrar.click();
+            }
+        });
+
+        // Permitir envio com Enter
+        entradaMensagem.addEventListener('keypress', function(event) {
+            if (event.key === 'Enter') {
+                botaoEnviar.click();
+            }
+        });
+    </script>
+</body>
+</html>
