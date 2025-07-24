@@ -8,7 +8,7 @@
 
 [**Cleuton Sampaio**](https://linkedin.com/in/cleutonsampaio)
 
-[**Veja no GitHub**](https://https://github.com/cleuton/rustingcrab/tree/main/code_samples/rust_vs_go)
+[**Veja no GitHub**](https://github.com/cleuton/rustingcrab/tree/main/code_samples/rust_vs_go)
 
 
 # Rust vs Go
