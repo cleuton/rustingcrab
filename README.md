@@ -14,6 +14,8 @@ Este é o lugar para você **enferrujar** com classe! Exemplos, cursos e até op
 
 ## Técnicas
 
+- [**Arenas**](./code_samples/arena).
+
 - [**Rust e Go no octógono**](./code_samples/rust_vs_go/).
 
 - [**Guia de APIs em Rust** - Como criar APIs em Rust - Rest, GraphQL, Websockets e gRPC](./code_samples/guia_apis_rust/).
