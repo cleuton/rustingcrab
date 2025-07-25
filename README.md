@@ -14,7 +14,7 @@ Este é o lugar para você **enferrujar** com classe! Exemplos, cursos e até op
 
 ## Técnicas
 
-- [**Arenas**](./code_samples/arena).
+- [**Efeito de onda**](./code_samples/circulos/).
 
 - [**Rust e Go no octógono**](./code_samples/rust_vs_go/).
 

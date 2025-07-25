@@ -1,0 +1,9 @@
+[package]
+name = "circulos_animacao"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+ggez = "0.9"
+glam = "0.24"
+winit = "0.28"
