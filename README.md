@@ -14,6 +14,8 @@ Este é o lugar para você **enferrujar** com classe! Exemplos, cursos e até op
 
 ## Técnicas
 
+- [**Cargo workspaces - particionando seu projeto**](./code_samples/cargo_workspaces/).
+
 - [**Efeito de onda**](./code_samples/circulos/).
 
 - [**Rust e Go no octógono**](./code_samples/rust_vs_go/).
