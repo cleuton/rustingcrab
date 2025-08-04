@@ -162,7 +162,7 @@ vagrant destroy -f
 
 ## Links
 
-* Repository: [https://github.com/yourusername/env\_inspector](https://github.com/yourusername/env_inspector)
-* Issue Tracker: [https://github.com/yourusername/env\_inspector/issues](https://github.com/yourusername/env_inspector/issues)
+* Repository: [https://github.com/cleuton/rustingcrab/tree/main/code_samples/env_inspector](https://github.com/cleuton/rustingcrab/tree/main/code_samples/env_inspector)
+* Issue Tracker: [https://github.com/cleuton/rustingcrab/issues](https://github.com/cleuton/rustingcrab/issues)
 * License: MIT/Apache-2.0
 
