@@ -2,7 +2,7 @@
 name        = "env_inspector"
 version     = "0.1.0"
 edition     = "2021"
-authors     = ["Your Name <you@example.com>"]
+authors     = ["Cleuton Sampaio <cleuton@cleutonsampaio.com>"]
 description = "Detect if running in container, VM, or bare metal"
 license     = "MIT/Apache-2.0"
 repository  = "https://github.com/cleuton/rustingcrab/tree/main/code_samples/env_inspector"
