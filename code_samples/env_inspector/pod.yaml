@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: env-inspector-test
+spec:
+  containers:
+    - name: inspector
+      image: env-inspector:latest    # This is for minikube. Ensure this image is built and available locally
+      command: ["inspect"]
+      imagePullPolicy: Never
+  restartPolicy: Never

@@ -1,0 +1,31 @@
+Vagrant.configure("2") do |config|
+  # Use Ubuntu 20.04
+  config.vm.box = "ubuntu/focal64"
+
+  # Mount your project into /home/vagrant/env_inspector
+  config.vm.synced_folder ".", "/home/vagrant/env_inspector"
+
+  # Single shell provisioner—installs deps, Rust, builds & runs
+  config.vm.provision "shell", inline: <<-SHELL
+    set -eux
+
+    # Install system build tools and dependencies
+    sudo apt-get update
+    sudo DEBIAN_FRONTEND=noninteractive apt-get install -y \
+      build-essential curl ca-certificates
+
+    # Install Rust via rustup under vagrant user
+    su - vagrant -c "curl https://sh.rustup.rs -sSf | sh -s -- -y"
+    # Make sure cargo is on PATH for this session
+    su - vagrant -c "echo 'source ~/.cargo/env' >> ~/.bashrc"
+
+    # Build the inspect binary inside the synced folder
+    su - vagrant -c "source /home/vagrant/.cargo/env && \
+      cd /home/vagrant/env_inspector && \
+      cargo build --release --bin inspect"
+
+    # Finally, run it
+    echo "==== Running inspect inside VM ===="
+    /home/vagrant/env_inspector/target/release/inspect
+  SHELL
+end

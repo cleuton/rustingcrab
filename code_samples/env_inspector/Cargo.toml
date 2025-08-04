@@ -1,0 +1,15 @@
+[package]
+name        = "env_inspector"
+version     = "0.1.0"
+edition     = "2021"
+authors     = ["Your Name <you@example.com>"]
+description = "Detect if running in container, VM, or bare metal"
+license     = "MIT/Apache-2.0"
+repository  = "https://https://github.com/cleuton/rustingcrab/tree/main/code_samples/env_inspector"
+readme      = "README.md"
+
+[dependencies]
+# nenhuma dependência externa
+
+[dev-dependencies]
+# nenhuma dependência extra para testes
