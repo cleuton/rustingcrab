@@ -3,7 +3,7 @@
 
 [**Cleuton Sampaio**](https://linkedin.com/in/cleutonsampaio)
 
-[**See on GitHub**](https://https://github.com/cleuton/rustingcrab/tree/main/code_samples/env_inspector)
+[**See on GitHub**](https://github.com/cleuton/rustingcrab/blob/main/code_samples/env_inspector/README.md)
 
 
 # env\_inspector
