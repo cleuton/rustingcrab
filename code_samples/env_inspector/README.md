@@ -41,9 +41,18 @@ use env_inspector::{detect_scope, EnvScope};
 
 fn main() {
     match detect_scope() {
-        EnvScope::Container(engine) => println!("Running in container: {}", engine),
-        EnvScope::Vm(vendor)      => println!("Running in VM: {}", vendor),
-        EnvScope::BareMetal      => println!("Running on bare metal"),
+        EnvScope::Kubernetes => {
+            println!("Running inside Kubernetes");
+        }
+        EnvScope::Container(engine) => {
+            println!("Running inside container: {}", engine);
+        }
+        EnvScope::Vm(vendor) => {
+            println!("Running inside VM: {}", vendor);
+        }
+        EnvScope::BareMetal => {
+            println!("Running on bare metal");
+        }
     }
 }
 ```
