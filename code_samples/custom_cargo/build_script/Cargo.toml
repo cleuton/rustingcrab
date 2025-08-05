@@ -1,0 +1,10 @@
+[package]
+name = "hello-build-rs"
+version = "0.1.0"
+edition = "2021"
+
+# Cargo runs build.rs automatically if the file exists.
+# [build-dependencies] are only needed if your build script
+# uses external crates (like chrono, bindgen, etc).
+[build-dependencies]
+chrono = "0.4"

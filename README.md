@@ -14,7 +14,9 @@ Este é o lugar para você **enferrujar** com classe! Exemplos, cursos e até op
 
 ## Técnicas
 
-- [**Projeto de Crate - env_inspector**](./code_samples/env_inspector/).
+- [**Customização do build com Cargo**](./code_samples/custom_cargo/).
+
+- [**Projeto de Crate para crates.io - env_inspector**](./code_samples/env_inspector/).
 
 - [**Cargo workspaces - particionando seu projeto**](./code_samples/cargo_workspaces/).
 

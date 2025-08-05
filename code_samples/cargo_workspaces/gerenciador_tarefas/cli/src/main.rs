@@ -13,6 +13,10 @@ fn main() {
 
     println!("Tarefas cadastradas:");
     for tarefa in gerenciador.listar_tarefas() {
-        println!("- [{}] {}", if tarefa.concluida { "x" } else { " " }, tarefa.titulo);
+        println!(
+            "- [{}] {}",
+            if tarefa.concluida { "x" } else { " " },
+            tarefa.titulo
+        );
     }
 }

@@ -1,0 +1,8 @@
+[package]
+name = "cargo-checklist"
+version = "0.1.0"
+edition = "2021"
+description = "A custom cargo command to check code quality: fmt, clippy, and tests"
+repository = "https://github.com/yourusername/cargo-checklist"
+
+[dependencies]

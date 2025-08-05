@@ -2,9 +2,7 @@ use actix_web::{web, App, HttpResponse, HttpServer, Responder};
 use core::GerenciadorDeTarefas;
 use std::sync::Mutex;
 
-async fn listar_tarefas(
-    dados: web::Data<Mutex<GerenciadorDeTarefas>>,
-) -> impl Responder {
+async fn listar_tarefas(dados: web::Data<Mutex<GerenciadorDeTarefas>>) -> impl Responder {
     let gerenciador = dados.lock().unwrap();
     let tarefas = gerenciador.listar_tarefas();
     HttpResponse::Ok().json(tarefas)
