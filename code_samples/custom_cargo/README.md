@@ -78,8 +78,7 @@ fn main() {
     let saudacao = format!(
         r#"
         pub fn saudar() -> &'static str {{
-            "Ola, {}! Este código foi criado em {}."
-        }}
+            "Ola, {}! Este código foi criado em {}." }}
         "#,
         nome,
         now.format("%d/%m/%Y %H:%M:%S")
