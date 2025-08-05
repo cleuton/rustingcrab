@@ -60,6 +60,8 @@ Aqui está um exemplo:
 
 #### `build.rs`
 
+{% raw %}
+
 ```text
 use std::env;
 use std::fs;
@@ -92,6 +94,8 @@ fn main() {
     println!("cargo:rerun-if-changed=build.rs");
 }
 ```
+
+{% endraw %}
 
 #### No arquivo `src/main.rs`
 
