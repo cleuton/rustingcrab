@@ -78,7 +78,7 @@ fn main() {
     let saudacao = format!(
         r#"
         pub fn saudar() -> &'static str {{
-            "Olá, {}! Este código foi criado em {}."
+            "Ola, {}! Este código foi criado em {}."
         }}
         "#,
         nome,
@@ -87,7 +87,7 @@ fn main() {
 
     // Grava na saída
     fs::write(&caminho_saida, saudacao)
-        .expect("Falhou ao gerar o código de saudação");
+        .expect("Falhou ao gerar o codigo de saudaçao");
 
     // Avisa o Cargo para recompilar se build.rs mudar
     println!("cargo:rerun-if-changed=build.rs");
