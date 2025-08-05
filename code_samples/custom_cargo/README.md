@@ -60,7 +60,7 @@ Aqui está um exemplo:
 
 #### `build.rs`
 
-```rust
+```text
 use std::env;
 use std::fs;
 use std::path::Path;
