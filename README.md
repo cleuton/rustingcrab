@@ -2,6 +2,8 @@
 
 # Rust language repo
 
+[**Cleuton Sampaio**](https://linkedin.com/in/cleutonsampaio) - Siga-me!
+
 [**Veja no GitHub**](https://github.com/cleuton/rustingcrab)
 
 **Você sabe com quem está falando?** Não, então veja [**nossos crates**](https://crates.io/users/cleuton) no `crates.io`!
