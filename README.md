@@ -14,6 +14,8 @@ Este é o lugar para você **enferrujar** com classe! Exemplos, cursos e até op
 
 ## Técnicas
 
+- [**Derive macro para validar esquema de arquivos CSV (crates.io)**](./code_samples/csv-schema-validator/).
+
 - [**Customização do build com Cargo**](./code_samples/custom_cargo/).
 
 - [**Projeto de Crate para crates.io - env_inspector**](./code_samples/env_inspector/).
