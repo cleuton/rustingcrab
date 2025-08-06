@@ -1,0 +1,21 @@
+[package]
+name = "csv-schema-validator-derive"
+version = "0.1.0"
+edition = "2021"
+description = "Procedural macro for deriving CSV schema validation"
+license = "MIT"
+categories = ["parsing", "development-tools"]
+repository = "https://github.com/seu-usuario/csv-schema-validator"
+
+[lib]
+proc-macro = true
+
+[dependencies]
+# Usar syn 2.0 com todas as features necessárias
+syn = { version = "2.0", features = ["full", "extra-traits"] }
+quote = "1.0"
+proc-macro2 = "1.0"
+
+[features]
+std = []
+default = ["std"]
