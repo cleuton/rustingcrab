@@ -4,7 +4,7 @@
 
 [**Veja no GitHub**](https://github.com/cleuton/rustingcrab)
 
-[**ENGLISH**](./english)
+**Você sabe com quem está falando?** Não, então veja [**nossos crates**](https://crates.io/users/cleuton) no `crates.io`!
 
 Este é o lugar para você **enferrujar** com classe! Exemplos, cursos e até oportunidades em **Rust** para você. 
 
