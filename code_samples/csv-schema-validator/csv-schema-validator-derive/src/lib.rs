@@ -17,7 +17,7 @@ enum Validation {
     Range { min: f64, max: f64 },
     Regex { regex: String },
     Required,
-    Custom { path: syn::Path }, // Expects a syn::Expr::Lit(syn::Lit::Str) which will be parsed as a Path
+    Custom { path: syn::Path }, 
 }
 
 impl Validation {
@@ -25,21 +25,17 @@ impl Validation {
     fn parse_validations(input: syn::parse::ParseStream) -> syn::Result<Vec<Self>> {
         let mut validations = Vec::new();
 
-        // Parses Meta items separated by commas (e.g., Path, NameValue, List)
         let meta_items = syn::punctuated::Punctuated::<Meta, syn::Token![,]>::parse_terminated(input)?;
 
         for meta in meta_items {
             match meta {
-                // Handles `#[validate(required)]`
                 Meta::Path(path) => {
                     if path.is_ident("required") {
                         validations.push(Validation::Required);
                     }
                 }
-                // Handles `#[validate(regex = "...")]` and `#[validate(custom = "...")]`
                 Meta::NameValue(mnv) => {
                     if mnv.path.is_ident("regex") {
-                        // In syn 2.0, value is an Expr
                         if let Expr::Lit(ExprLit { lit: Lit::Str(lit_str), .. }) = mnv.value {
                             validations.push(Validation::Regex {
                                 regex: lit_str.value(),
@@ -48,8 +44,6 @@ impl Validation {
                             return Err(syn::Error::new_spanned(mnv.value, "Expected string literal for `regex`"));
                         }
                     } else if mnv.path.is_ident("custom") {
-                        // The original expectation is a string literal (e.g., "validate_length").
-                        // We will parse the string literal as a syn::Path.
                         if let Expr::Lit(ExprLit { lit: Lit::Str(lit_str), .. }) = mnv.value {
                             let path: syn::Path = syn::parse_str(&lit_str.value())
                                 .map_err(|e| syn::Error::new_spanned(lit_str, e))?;
@@ -59,20 +53,17 @@ impl Validation {
                         }
                     }
                 }
-                // Handles `#[validate(range(...))]`
                 Meta::List(meta_list) => {
                     if meta_list.path.is_ident("range") {
                         let mut min: Option<f64> = None;
                         let mut max: Option<f64> = None;
 
-                        // In syn 2.0, using parse_args_with Punctuated is the correct way
                         let range_items: syn::punctuated::Punctuated<syn::MetaNameValue, syn::Token![,]> = 
                             meta_list.parse_args_with(syn::punctuated::Punctuated::parse_terminated)?;
                         
                         for kv in range_items {
-                            // In syn 2.0, MetaNameValue has fields 'path' and 'value'
                             let key = kv.path;
-                            let value = kv.value; // kv.value is a syn::Expr
+                            let value = kv.value; 
                             if key.is_ident("min") {
                                 if let Expr::Lit(ExprLit { lit: Lit::Float(lit_float), .. }) = value {
                                     min = Some(lit_float.base10_parse::<f64>()?);
@@ -100,7 +91,6 @@ impl Validation {
 }
 
 
-/// The main entry point for the procedural macro `#[derive(ValidateCsv)]`.
 #[proc_macro_derive(ValidateCsv, attributes(validate))]
 pub fn validate_csv_derive(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
@@ -128,15 +118,11 @@ pub fn validate_csv_derive(input: TokenStream) -> TokenStream {
     let mut field_validations = Vec::new();
 
     for field in fields {
-        // For Fields::Named, field.ident is guaranteed to be Some(ident).
-        // We clone the Ident to have an owned version for later use.
         let field_name = field.ident.as_ref().unwrap().clone(); 
         let mut validations = Vec::new();
 
         for attr in &field.attrs {
-            // In syn 2.0, attr.path is a Path, not a method
             if attr.path().is_ident("validate") {
-                // Use parse_args_with and our custom parsing function
                 match attr.parse_args_with(Validation::parse_validations) {
                     Ok(mut parsed_validations) => {
                         validations.append(&mut parsed_validations);
@@ -158,14 +144,13 @@ pub fn validate_csv_derive(input: TokenStream) -> TokenStream {
 
     let validation_arms = field_validations.into_iter().map(|fv| {
         let field_name_str = fv.field_name.to_string();
-        // Using the owned Ident for code generation
         let field_name_ident = fv.field_name; 
 
         let checks = fv.validations.into_iter().map(|validation| {
             match validation {
                 Validation::Required => {
                     quote! {
-                        if (&self.#field_name_ident).is_none() { // More idiomatic check for Option
+                        if (&self.#field_name_ident).is_none() { 
                             errors.push(::csv_schema_validator::ValidationError {
                                 field: #field_name_str.to_string(),
                                 message: "mandatory field".to_string(),
@@ -186,13 +171,8 @@ pub fn validate_csv_derive(input: TokenStream) -> TokenStream {
                 }
                 Validation::Regex { regex } => {
                     quote! {
-                        // --- Robust Regex Handling ---
-                        // Assumes that the main crate re-exports once_cell and regex in csv_schema_validator::__private
                         use ::csv_schema_validator::__private::once_cell::sync::Lazy;
                         use ::csv_schema_validator::__private::regex;
-
-                        // Static for the compiled regex, with a unique scope for this expansion (unique per field).
-                        // Wrapped in a Result to handle compilation errors elegantly.
                         static RE: Lazy<Result<regex::Regex, regex::Error>> = Lazy::new(|| regex::Regex::new(#regex));
 
                         match RE.as_ref() {
@@ -205,7 +185,6 @@ pub fn validate_csv_derive(input: TokenStream) -> TokenStream {
                                 }
                             }
                             Err(e) => {
-                                // Reports the regex compilation error as a validation error
                                 errors.push(::csv_schema_validator::ValidationError {
                                     field: #field_name_str.to_string(),
                                     message: format!("invalid regex '{}': {}", #regex, e),
@@ -216,8 +195,6 @@ pub fn validate_csv_derive(input: TokenStream) -> TokenStream {
                 }
                 Validation::Custom { path } => {
                     quote! {
-                        // Calls the custom validation function defined by the user.
-                        // Expected: fn(&T) -> Result<(), E> where E: Display
                         match #path(&self.#field_name_ident) {
                             Err(err) => {
                                 errors.push(::csv_schema_validator::ValidationError {
@@ -225,14 +202,13 @@ pub fn validate_csv_derive(input: TokenStream) -> TokenStream {
                                     message: format!("{}", err),
                                 });
                             }
-                            Ok(()) => {} // Validation passed
+                            Ok(()) => {} 
                         }
                     }
                 }
             }
         });
 
-        // Combines checks for this field
         quote! {
             #(#checks)*
         }
@@ -240,8 +216,6 @@ pub fn validate_csv_derive(input: TokenStream) -> TokenStream {
 
     let expanded = quote! {
         impl #name {
-            /// Validates the instance of the struct according to the `#[validate(...)]` rules.
-            /// Returns `Ok(())` if all validations pass, or `Err(Vec<ValidationError>)` listing the failures.
             pub fn validate_csv(&self) -> ::core::result::Result<(), ::std::vec::Vec<::csv_schema_validator::ValidationError>> {
                 let mut errors = ::std::vec::Vec::new();
                 #(#validation_arms)*
