@@ -1,7 +1,7 @@
 pub use csv_schema_validator_derive::ValidateCsv;
 
-pub use serde;
 pub use csv;
+pub use serde;
 
 #[doc(hidden)]
 pub mod __private {
@@ -22,4 +22,3 @@ impl std::fmt::Display for ValidationError {
 }
 
 impl std::error::Error for ValidationError {}
-

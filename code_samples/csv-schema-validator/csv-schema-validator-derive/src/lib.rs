@@ -2,9 +2,7 @@ extern crate proc_macro;
 
 use proc_macro::TokenStream;
 use quote::quote;
-use syn::{
-    parse_macro_input, Data, DeriveInput, Fields, Meta, Expr, ExprLit, Lit, Ident,
-};
+use syn::{parse_macro_input, Data, DeriveInput, Expr, ExprLit, Fields, Ident, Lit, Meta};
 
 // Structure to store field validations
 struct FieldValidation {
@@ -17,7 +15,7 @@ enum Validation {
     Range { min: f64, max: f64 },
     Regex { regex: String },
     Required,
-    Custom { path: syn::Path }, 
+    Custom { path: syn::Path },
 }
 
 impl Validation {
@@ -25,7 +23,8 @@ impl Validation {
     fn parse_validations(input: syn::parse::ParseStream) -> syn::Result<Vec<Self>> {
         let mut validations = Vec::new();
 
-        let meta_items = syn::punctuated::Punctuated::<Meta, syn::Token![,]>::parse_terminated(input)?;
+        let meta_items =
+            syn::punctuated::Punctuated::<Meta, syn::Token![,]>::parse_terminated(input)?;
 
         for meta in meta_items {
             match meta {
@@ -36,15 +35,26 @@ impl Validation {
                 }
                 Meta::NameValue(mnv) => {
                     if mnv.path.is_ident("regex") {
-                        if let Expr::Lit(ExprLit { lit: Lit::Str(lit_str), .. }) = mnv.value {
+                        if let Expr::Lit(ExprLit {
+                            lit: Lit::Str(lit_str),
+                            ..
+                        }) = mnv.value
+                        {
                             validations.push(Validation::Regex {
                                 regex: lit_str.value(),
                             });
                         } else {
-                            return Err(syn::Error::new_spanned(mnv.value, "Expected string literal for `regex`"));
+                            return Err(syn::Error::new_spanned(
+                                mnv.value,
+                                "Expected string literal for `regex`",
+                            ));
                         }
                     } else if mnv.path.is_ident("custom") {
-                        if let Expr::Lit(ExprLit { lit: Lit::Str(lit_str), .. }) = mnv.value {
+                        if let Expr::Lit(ExprLit {
+                            lit: Lit::Str(lit_str),
+                            ..
+                        }) = mnv.value
+                        {
                             let path: syn::Path = syn::parse_str(&lit_str.value())
                                 .map_err(|e| syn::Error::new_spanned(lit_str, e))?;
                             validations.push(Validation::Custom { path });
@@ -58,30 +68,53 @@ impl Validation {
                         let mut min: Option<f64> = None;
                         let mut max: Option<f64> = None;
 
-                        let range_items: syn::punctuated::Punctuated<syn::MetaNameValue, syn::Token![,]> = 
-                            meta_list.parse_args_with(syn::punctuated::Punctuated::parse_terminated)?;
-                        
+                        let range_items: syn::punctuated::Punctuated<
+                            syn::MetaNameValue,
+                            syn::Token![,],
+                        > = meta_list
+                            .parse_args_with(syn::punctuated::Punctuated::parse_terminated)?;
+
                         for kv in range_items {
                             let key = kv.path;
-                            let value = kv.value; 
+                            let value = kv.value;
                             if key.is_ident("min") {
-                                if let Expr::Lit(ExprLit { lit: Lit::Float(lit_float), .. }) = value {
+                                if let Expr::Lit(ExprLit {
+                                    lit: Lit::Float(lit_float),
+                                    ..
+                                }) = value
+                                {
                                     min = Some(lit_float.base10_parse::<f64>()?);
                                 } else {
-                                    return Err(syn::Error::new_spanned(value, "`min` value for `range` must be a float literal"));
+                                    return Err(syn::Error::new_spanned(
+                                        value,
+                                        "`min` value for `range` must be a float literal",
+                                    ));
                                 }
                             } else if key.is_ident("max") {
-                                if let Expr::Lit(ExprLit { lit: Lit::Float(lit_float), .. }) = value {
+                                if let Expr::Lit(ExprLit {
+                                    lit: Lit::Float(lit_float),
+                                    ..
+                                }) = value
+                                {
                                     max = Some(lit_float.base10_parse::<f64>()?);
                                 } else {
-                                    return Err(syn::Error::new_spanned(value, "`max` value for `range` must be a float literal"));
+                                    return Err(syn::Error::new_spanned(
+                                        value,
+                                        "`max` value for `range` must be a float literal",
+                                    ));
                                 }
                             }
                         }
                         if min.is_none() && max.is_none() {
-                            return Err(syn::Error::new_spanned(meta_list, "`range` validation requires at least one of `min` or `max`"));
+                            return Err(syn::Error::new_spanned(
+                                meta_list,
+                                "`range` validation requires at least one of `min` or `max`",
+                            ));
                         }
-                        validations.push(Validation::Range { min: min.unwrap_or(f64::NEG_INFINITY), max: max.unwrap_or(f64::INFINITY) });
+                        validations.push(Validation::Range {
+                            min: min.unwrap_or(f64::NEG_INFINITY),
+                            max: max.unwrap_or(f64::INFINITY),
+                        });
                     }
                 }
             }
@@ -89,7 +122,6 @@ impl Validation {
         Ok(validations)
     }
 }
-
 
 #[proc_macro_derive(ValidateCsv, attributes(validate))]
 pub fn validate_csv_derive(input: TokenStream) -> TokenStream {
@@ -102,7 +134,7 @@ pub fn validate_csv_derive(input: TokenStream) -> TokenStream {
             _ => {
                 return syn::Error::new_spanned(
                     &data.fields,
-                    "only structs with named fields (e.g., `struct S { a: T }`) are supported"
+                    "only structs with named fields (e.g., `struct S { a: T }`) are supported",
                 )
                 .to_compile_error()
                 .into();
@@ -118,7 +150,7 @@ pub fn validate_csv_derive(input: TokenStream) -> TokenStream {
     let mut field_validations = Vec::new();
 
     for field in fields {
-        let field_name = field.ident.as_ref().unwrap().clone(); 
+        let field_name = field.ident.as_ref().unwrap().clone();
         let mut validations = Vec::new();
 
         for attr in &field.attrs {
@@ -144,13 +176,13 @@ pub fn validate_csv_derive(input: TokenStream) -> TokenStream {
 
     let validation_arms = field_validations.into_iter().map(|fv| {
         let field_name_str = fv.field_name.to_string();
-        let field_name_ident = fv.field_name; 
+        let field_name_ident = fv.field_name;
 
         let checks = fv.validations.into_iter().map(|validation| {
             match validation {
                 Validation::Required => {
                     quote! {
-                        if (&self.#field_name_ident).is_none() { 
+                        if (&self.#field_name_ident).is_none() {
                             errors.push(::csv_schema_validator::ValidationError {
                                 field: #field_name_str.to_string(),
                                 message: "mandatory field".to_string(),
@@ -202,7 +234,7 @@ pub fn validate_csv_derive(input: TokenStream) -> TokenStream {
                                     message: format!("{}", err),
                                 });
                             }
-                            Ok(()) => {} 
+                            Ok(()) => {}
                         }
                     }
                 }
@@ -229,4 +261,4 @@ pub fn validate_csv_derive(input: TokenStream) -> TokenStream {
     };
 
     TokenStream::from(expanded)
-} 
+}
