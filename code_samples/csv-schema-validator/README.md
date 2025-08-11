@@ -1,5 +1,7 @@
 # csv-schema-validator
 
+## Version 0.1.1
+
 [![Crates.io](https://img.shields.io/crates/v/csv-schema-validator.svg)](https://crates.io/crates/csv-schema-validator) [![Documentation](https://docs.rs/csv-schema-validator/badge.svg)](https://docs.rs/csv-schema-validator)
 
 A Rust library for validating CSV record data based on rules defined directly in your structs using the `#[derive(ValidateCsv)]` macro.
@@ -10,7 +12,7 @@ Add the following to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-csv-schema-validator = "0.1"
+csv-schema-validator = "0.1.1"
 serde = { version = "1.0", features = ["derive"] }
 csv = "1.3"
 regex = "1.11"
@@ -33,7 +35,7 @@ struct Record {
     #[validate(regex = r"^[A-Z]{3}\d{4}$")]
     code: String,
 
-    #[validate(required)]
+    #[validate(required, length(min=10, max=50))]
     name: Option<String>,
 
     #[validate(custom = "length_validator")]
@@ -62,7 +64,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 ## Usage
 
-### Range Validation
+### Range Validation (since 0.1.0)
 
 ```rust
 #[validate(range(min = 0.0, max = 100.0))]
@@ -71,7 +73,7 @@ grade: f64,
 
 Ensures that `grade` is between 0.0 and 100.0 (inclusive).
 
-### Regex Validation
+### Regex Validation (since 0.1.0)
 
 ```rust
 #[validate(regex = r"^[A-Z]{3}\d{4}$")]
@@ -80,7 +82,7 @@ code: String,
 
 Validates the field against a regular expression.
 
-### Required Validation
+### Required Validation (since 0.1.0)
 
 ```rust
 #[validate(required)]
@@ -89,7 +91,7 @@ name: Option<String>,
 
 Ensures that the `Option` is not `None`.
 
-### Custom Validation
+### Custom Validation (since 0.1.0)
 
 ```rust
 #[validate(custom = "path::to::func")]
@@ -97,6 +99,13 @@ comments: String,
 ```
 
 Calls your custom function `fn(&T) -> Result<(), String>` for additional checks.
+
+### Length (since 0.1.1)
+
+```rust
+#[validate(required, length(min = 10, max = 50))]
+name: Option<String>,
+```
 
 ### Struct check
 
@@ -155,13 +164,13 @@ This is an example which reads a csv file:
 ```toml
 [package]
 name = "use-csv-validator"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 
 [dependencies]
 csv = "1.1"
 serde = { version = "1.0", features = ["derive"] }
-csv-schema-validator = "0.1.0"
+csv-schema-validator = "0.1.1"
 ```
 
 `src/main.rs`:
@@ -198,6 +207,10 @@ struct TestRecord {
     // comments uses our custom length validator
     #[validate(custom = "length_validation")]
     comments: String,
+
+    // more needs to be a valid string with length range
+    #[validate(length(min = 1, max = 20))]
+    more: Option<String>,
 }
 
 fn main() -> Result<(), Box<dyn Error>> {
@@ -222,24 +235,26 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     Ok(())
 }
+
 ```
 
 `data.csv`: 
 
 ```csv
-grade,code,name,comments
-85.5,XYZ1234,Alice,All good
-90.0,XYZ5678,Bob,Too long comment indeed
-95.0,xWF9101,Charlie,code
-110.0,XYZ2345,Dave,range
-34.0,XYZ6789,,name
-f34s,XYZ3456,Eve,comments
+grade,code,name,comments,more
+85.5,XYZ1234,Alice,All good,ok
+90.0,XYZ5678,Bob,Too long comment indeed,ok
+95.0,xWF9101,Charlie,code,ok
+110.0,XYZ2345,Dave,range,ok
+34.0,XYZ6789,,name,ok
+78.0,XYZ7890,Frank,more,too long field indeed
+f34s,XYZ3456,Eve,comments,ok
 ```
 
 Running this example will generate these messages: 
 
 ```shell
-Line 1: Record is valid: TestRecord { grade: 85.5, code: "XYZ1234", name: Some("Alice"), comments: "All good" }
+Line 1: Record is valid: TestRecord { grade: 85.5, code: "XYZ1234", name: Some("Alice"), comments: "All good", more: Some("ok") }
 Line 2: Validation errors:
   Field `comments`: Comments too long
 Line 3: Validation errors:
@@ -248,7 +263,9 @@ Line 4: Validation errors:
   Field `grade`: value out of expected range: 0 to 100
 Line 5: Validation errors:
   Field `name`: mandatory field
-Error: Error(Deserialize { pos: Some(Position { byte: 164, line: 7, record: 6 }), err: DeserializeError { field: Some(0), kind: ParseFloat(ParseFloatError { kind: Invalid }) } })
+Line 6: Validation errors:
+  Field `more`: length out of expected range: 1 to 20
+Error: Error(Deserialize { pos: Some(Position { byte: 230, line: 8, record: 7 }), err: DeserializeError { field: Some(0), kind: ParseFloat(ParseFloatError { kind: Invalid }) } })
 ```
 
 ## Why Use This Crate?
