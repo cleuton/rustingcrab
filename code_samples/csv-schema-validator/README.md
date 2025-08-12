@@ -1,6 +1,6 @@
 # csv-schema-validator
 
-## Version 0.1.1
+## Version 0.1.2
 
 [![Crates.io](https://img.shields.io/crates/v/csv-schema-validator.svg)](https://crates.io/crates/csv-schema-validator) [![Documentation](https://docs.rs/csv-schema-validator/badge.svg)](https://docs.rs/csv-schema-validator)
 
@@ -12,7 +12,7 @@ Add the following to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-csv-schema-validator = "0.1.1"
+csv-schema-validator = "0.1.2"
 serde = { version = "1.0", features = ["derive"] }
 csv = "1.3"
 regex = "1.11"
@@ -27,19 +27,25 @@ use csv::Reader;
 use csv_schema_validator::{ValidateCsv, ValidationError};
 
 // Define your struct with validation annotations
-#[derive(Debug, Deserialize, ValidateCsv)]
-struct Record {
+#[derive(Deserialize, ValidateCsv, Debug)]
+struct TestRecord {
     #[validate(range(min = 0.0, max = 100.0))]
     grade: f64,
 
     #[validate(regex = r"^[A-Z]{3}\d{4}$")]
     code: String,
 
-    #[validate(required, length(min=10, max=50))]
+    #[validate(required, length(min = 10, max = 50), not_blank)]
     name: Option<String>,
 
-    #[validate(custom = "length_validator")]
+    #[validate(custom = "length_validation")]
     comments: String,
+
+    #[validate(required, one_of("short", "medium", "long"))]
+    more_comments: Option<String>,
+
+    #[validate(required, not_in("forbidden", "banned"))]
+    tag: Option<String>,
 }
 
 // Custom validator: comments must be at most 50 characters
@@ -107,6 +113,33 @@ Calls your custom function `fn(&T) -> Result<(), String>` for additional checks.
 name: Option<String>,
 ```
 
+### Not Blank (since 0.1.2)
+
+Checks for all spaces or all whitespaces field (Strings):
+
+```rust
+#[validate(required, length(min = 10, max = 50), not_blank)]
+name: Option<String>,
+```
+
+### One of (since 0.1.2)
+
+Checks if the string has one of the allowed values: 
+
+```rust
+#[validate(required, one_of("short", "medium", "long"))]
+more_comments: Option<String>,
+```
+
+### Not in (since 0.1.2)
+
+Checks if the string has one of the not allowed values: 
+
+```rust
+#[validate(required, not_in("forbidden", "banned"))]
+tag: Option<String>,
+```
+
 ### Struct check
 
 The macro validates the type it is annotating, only strucs with named fields are allowed: 
@@ -170,7 +203,7 @@ edition = "2021"
 [dependencies]
 csv = "1.1"
 serde = { version = "1.0", features = ["derive"] }
-csv-schema-validator = "0.1.1"
+csv-schema-validator = "0.1.2"
 ```
 
 `src/main.rs`:
@@ -190,27 +223,26 @@ fn length_validation(s: &str) -> Result<(), String> {
     }
 }
 
-#[derive(Debug, Deserialize, ValidateCsv)]
+#[derive(Deserialize, ValidateCsv, Debug)]
 struct TestRecord {
-    // grade must be between 0.0 and 100.0
     #[validate(range(min = 0.0, max = 100.0))]
     grade: f64,
 
-    // code must be 3 uppercase letters followed by 4 digits
     #[validate(regex = r"^[A-Z]{3}\d{4}$")]
     code: String,
 
-    // name is required (must be Some)
-    #[validate(required)]
+    #[validate(required, length(min = 10, max = 50), not_blank)]
     name: Option<String>,
 
-    // comments uses our custom length validator
     #[validate(custom = "length_validation")]
     comments: String,
 
-    // more needs to be a valid string with length range
-    #[validate(length(min = 1, max = 20))]
-    more: Option<String>,
+    #[serde(rename = "more")]
+    #[validate(required, one_of("short", "medium", "long"))]
+    more_comments: Option<String>,
+
+    #[validate(required, not_in("forbidden", "banned"))]
+    tag: Option<String>,
 }
 
 fn main() -> Result<(), Box<dyn Error>> {
@@ -235,37 +267,48 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     Ok(())
 }
-
 ```
 
 `data.csv`: 
 
 ```csv
-grade,code,name,comments,more
-85.5,XYZ1234,Alice,All good,ok
-90.0,XYZ5678,Bob,Too long comment indeed,ok
-95.0,xWF9101,Charlie,code,ok
-110.0,XYZ2345,Dave,range,ok
-34.0,XYZ6789,,name,ok
-78.0,XYZ7890,Frank,more,too long field indeed
-f34s,XYZ3456,Eve,comments,ok
+90.0,XYZ5678,Bob Marley,Too long comment indeed,medium,allowed
+110.0,XYZ4567,      ,ok,short,allowed
+95.0,xWF9101,Charlie,code,long,allowed
+110.0,XYZ2345,Dave Copperfield,range,short,allowed
+34.0,XYZ6789,,name,medium,allowed
+78.0,XYZ7890,Frank,more,invalid comment,allowed
+88.0,XYZ4567,Grace,All good,short,
+90.0,XYZ3567,Grace of All Times,All good,medium,forbidden
+f34s,XYZ3456,Eve,comments,short,invalid grade
 ```
 
 Running this example will generate these messages: 
 
 ```shell
-Line 1: Record is valid: TestRecord { grade: 85.5, code: "XYZ1234", name: Some("Alice"), comments: "All good", more: Some("ok") }
+Line 1: Record is valid: TestRecord { grade: 85.5, code: "XYZ1234", name: Some("Alice Smith"), comments: "All good", more_comments: Some("short"), tag: Some("allowed") }
 Line 2: Validation errors:
   Field `comments`: Comments too long
 Line 3: Validation errors:
-  Field `code`: does not match the expected pattern
-Line 4: Validation errors:
   Field `grade`: value out of expected range: 0 to 100
+  Field `name`: length out of expected range: 10 to 50
+  Field `name`: must not be blank or contain only whitespace
+Line 4: Validation errors:
+  Field `code`: does not match the expected pattern
+  Field `name`: length out of expected range: 10 to 50
 Line 5: Validation errors:
-  Field `name`: mandatory field
+  Field `grade`: value out of expected range: 0 to 100
 Line 6: Validation errors:
-  Field `more`: length out of expected range: 1 to 20
-Error: Error(Deserialize { pos: Some(Position { byte: 230, line: 8, record: 7 }), err: DeserializeError { field: Some(0), kind: ParseFloat(ParseFloatError { kind: Invalid }) } })
+  Field `name`: mandatory field
+Line 7: Validation errors:
+  Field `name`: length out of expected range: 10 to 50
+  Field `more_comments`: invalid value
+Line 8: Validation errors:
+  Field `name`: length out of expected range: 10 to 50
+  Field `tag`: mandatory field
+Line 9: Validation errors:
+  Field `tag`: value not allowed
+Error: Error(Deserialize { pos: Some(Position { byte: 448, line: 11, record: 10 }), err: DeserializeError { field: Some(0), kind: ParseFloat(ParseFloatError { kind: Invalid }) } })
 ```
 
 ## Why Use This Crate?

@@ -22,6 +22,9 @@ enum Validation {
     Required,
     Custom { path: syn::Path },
     Length { min: usize, max: usize },
+    NotBlank,
+    OneOf { values: Vec<String> },
+    NotIn { values: Vec<String> },    
 }
 
 impl Validation {
@@ -36,6 +39,8 @@ impl Validation {
                 Meta::Path(path) => {
                     if path.is_ident("required") {
                         validations.push(Validation::Required);
+                    } else if path.is_ident("not_blank") {
+                               validations.push(Validation::NotBlank);
                     }
                 }
                 Meta::NameValue(mnv) => {
@@ -162,7 +167,53 @@ impl Validation {
                             min: min.unwrap_or(f64::NEG_INFINITY),
                             max: max.unwrap_or(f64::INFINITY),
                         });
+                    } else  if meta_list.path.is_ident("one_of") {
+                        // aceita lista de literais string
+                        let items: syn::punctuated::Punctuated<syn::Expr, syn::Token![,]> =
+                            meta_list.parse_args_with(
+                                syn::punctuated::Punctuated::parse_terminated
+                            )?;
+                        let mut values = Vec::new();
+                        for expr in items {
+                            if let syn::Expr::Lit(ExprLit { lit: Lit::Str(s), .. }) = expr {
+                                values.push(s.value());
+                            } else {
+                                return Err(syn::Error::new_spanned(
+                                    expr, "`one_of` only accepts string literals"
+                                ));
+                            }
+                        }
+                        if values.is_empty() {
+                            return Err(syn::Error::new_spanned(
+                                meta_list, "`one_of` requires at least one value"
+                            ));
+                        }
+                        validations.push(Validation::OneOf { values });
                     }
+                    // not_in("x","y")
+                    else if meta_list.path.is_ident("not_in") {
+                        let items: syn::punctuated::Punctuated<syn::Expr, syn::Token![,]> =
+                            meta_list.parse_args_with(
+                                syn::punctuated::Punctuated::parse_terminated
+                            )?;
+                        let mut values = Vec::new();
+                        for expr in items {
+                            if let syn::Expr::Lit(ExprLit { lit: Lit::Str(s), .. }) = expr {
+                                values.push(s.value());
+                            } else {
+                                return Err(syn::Error::new_spanned(
+                                    expr, "`not_in` only accepts string literals"
+                                ));
+                            }
+                        }
+                        if values.is_empty() {
+                            return Err(syn::Error::new_spanned(
+                                meta_list, "`not_in` requires at least one value"
+                            ));
+                        }
+                        validations.push(Validation::NotIn { values });
+                    }
+
                 }
             }
         }
@@ -253,8 +304,31 @@ pub fn validate_csv_derive(input: TokenStream) -> TokenStream {
                     }
                 }
             }
+            Validation::NotBlank => {
+                if fv_is_option {
+                    quote! {
+                        if let Some(value) = &self.#field_name_ident {
+                            if value.trim().is_empty() {
+                                errors.push(::csv_schema_validator::ValidationError {
+                                    field: #field_name_str.to_string(),
+                                    message: "must not be blank or contain only whitespace".to_string(),
+                                });
+                            }
+                        }
+                    }
+                } else {
+                    quote! {
+                        let value = &self.#field_name_ident;
+                        if value.trim().is_empty() {
+                            errors.push(::csv_schema_validator::ValidationError {
+                                field: #field_name_str.to_string(),
+                                message: "must not be blank or contain only whitespace".to_string(),
+                            });
+                        }
+                    }
+                }
+            }
             Validation::Range { min, max } => {
-                // [FIX] valida range apenas quando Some(v) em Option<f64>
                 if fv_is_option {
                     quote! {
                         if let Some(value) = &self.#field_name_ident {
@@ -343,8 +417,62 @@ pub fn validate_csv_derive(input: TokenStream) -> TokenStream {
                     }
                 }
             }
+            Validation::OneOf { values } => {
+                let arr = values.clone();
+                if fv_is_option {
+                    quote! {
+                        if let Some(value) = &self.#field_name_ident {
+                            const __ALLOWED: &[&str] = &[#(#arr),*];
+                            if !__ALLOWED.contains(&value.as_str()) {
+                                errors.push(::csv_schema_validator::ValidationError {
+                                    field: #field_name_str.to_string(),
+                                    message: format!("invalid value"),
+                                });
+                            }
+                        }
+                    }
+                } else {
+                    quote! {
+                        let value = &self.#field_name_ident;
+                        const __ALLOWED: &[&str] = &[#(#arr),*];
+                        if !__ALLOWED.contains(&value.as_str()) {
+                            errors.push(::csv_schema_validator::ValidationError {
+                                field: #field_name_str.to_string(),
+                                message: format!("invalid value"),
+                            });
+                        }
+                    }
+                }
+            }
+
+            Validation::NotIn { values } => {
+                let arr = values.clone();
+                if fv_is_option {
+                    quote! {
+                        if let Some(value) = &self.#field_name_ident {
+                            const __FORBIDDEN: &[&str] = &[#(#arr),*];
+                            if __FORBIDDEN.contains(&value.as_str()) {
+                                errors.push(::csv_schema_validator::ValidationError {
+                                    field: #field_name_str.to_string(),
+                                    message: format!("value not allowed"),
+                                });
+                            }
+                        }
+                    }
+                } else {
+                    quote! {
+                        let value = &self.#field_name_ident;
+                        const __FORBIDDEN: &[&str] = &[#(#arr),*];
+                        if __FORBIDDEN.contains(&value.as_str()) {
+                            errors.push(::csv_schema_validator::ValidationError {
+                                field: #field_name_str.to_string(),
+                                message: format!("value not allowed"),
+                            });
+                        }
+                    }
+                }
+            }            
             Validation::Custom { path } => {
-                // [FIX] chama função apenas quando Some(v) para Option<T>
                 if fv_is_option {
                     quote! {
                         if let Some(value) = &self.#field_name_ident {
