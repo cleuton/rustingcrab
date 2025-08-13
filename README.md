@@ -14,6 +14,13 @@ Este é o lugar para você **enferrujar** com classe! Exemplos, cursos e até op
 
 > O curso **Rusting with style** é gratuito, mas você pode agendar uma entrevista para tirar um **certificado**. Essa entrevista é paga, mas haverá uma promoção com algumas entrevistas gratuitas. Quando estiver disponível para marcar entrevistas, basta agendar no meu site. Veja o PDF da primeira aula. 
 
+<img src="novos_cursos.png" height=300>
+
+Sim, em breve dois novos cursos sobre **Rust** para você:
+
+- **Rust kindergarten**: Para você, que quer aprender Rust e melhorar a sua fluência na linguagem - **GRATUITO !**
+- **Next Level Rust**: For you, who already know the basics, and want to level up your Rust skills - **Udemy !**
+
 ## Técnicas
 
 - [**Teleprompter para quem grava vídeos**](./code_samples/teleprompter/).
