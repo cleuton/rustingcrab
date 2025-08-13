@@ -198,7 +198,7 @@ O módulo `addon.js` é gerado durante a compilação e atua como um wrapper par
    ```
 2. Compile o addon:
    ```bash
-   napi build run
+   npm build run
    ```
 3. Execute:
    ```bash
