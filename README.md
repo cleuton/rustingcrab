@@ -23,6 +23,8 @@ Sim, em breve dois novos cursos sobre **Rust** para você:
 
 ## Técnicas
 
+- [**Rust FFI - Foreign Function Interface - Java, Python, NodeJS**](./code_samples/rust_ffi/).
+
 - [**Teleprompter para quem grava vídeos**](./code_samples/teleprompter/).
 
 - [**Derive macro para validar esquema de arquivos CSV (crates.io)**](./code_samples/csv-schema-validator/).

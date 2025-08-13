@@ -1,0 +1,17 @@
+{
+  "name": "node-rust-demo",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "build": "napi build --platform --release --js addon.js"
+  },
+  "napi": {
+    "name": "index"
+  },  
+  "devDependencies": {
+    "@napi-rs/cli": "^2.0.0"
+  },
+  "napi": {
+    "name": "node_rust_demo"
+  }
+}

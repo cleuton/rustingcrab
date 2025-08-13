@@ -1,0 +1,13 @@
+[package]
+name = "node_rust_demo"
+version = "0.1.0"
+edition = "2024"
+
+[lib]
+name = "node_rust_demo"
+crate-type = ["cdylib"]
+path = "src/lib.rs"
+
+[dependencies]
+napi = "2"
+napi-derive = "2"
