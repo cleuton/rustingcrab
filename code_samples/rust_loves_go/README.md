@@ -27,7 +27,7 @@ Já pensou em integrar módulos **Rust** às suas aplicações em **Go**? Quais 
    Para pipelines que exigem jitter baixo (trading, media processing, inference local), mover o hot path para Rust reduz caudas (p95/p99), especialmente sob pressão do heap do Go.
 
 5. **Binários simples de distribuir**
-   Rust compila bem como staticlib/cdylib. Dá para linkar estaticamente (musl) e simplificar deploy de um único binário Go chamando a lib Rust — útil em edge e containers mínimos.
+   Rust compila bem como staticlib/cdylib. Dá para linkar estaticamente (musl) e simplificar deploy de um único binário Go chamando a lib Rust, útil em edge e containers mínimos.
 
 6. **Concorrência sem data races no trecho crítico**
    Você pode manter a orquestração em Go (goroutines, canais) e executar paralelismo pesado no lado Rust (rayon, tokio para I/O), isolando o risco de corridas onde a performance importa.
@@ -40,7 +40,7 @@ Em que tipo de apps usar?
 * Criptografia, compressão, codecs (imagem/áudio/vídeo), parsing binário pesado, regex streaming.
 * Processamento vetorial/SIMD, DSP, ML light em CPU.
 * Motores de regras/score rápido com p99 apertado.
-* Qualquer coisa que você faria em C/C++ para ganhar performance — só que com menos riscos.
+* Qualquer coisa que você faria em C/C++ para ganhar performance, só que com menos riscos.
 
 Nestes casos talvez seja melhor evitar:
 
