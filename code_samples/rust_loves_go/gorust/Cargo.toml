@@ -1,0 +1,10 @@
+[package]
+name = "gorust"
+version = "0.1.0"
+edition = "2024"
+
+[lib]
+crate-type = ["cdylib", "staticlib"]
+
+[dependencies]
+libc = "0.2.2"
