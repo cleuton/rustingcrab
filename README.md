@@ -23,6 +23,8 @@ Sim, em breve dois novos cursos sobre **Rust** para você:
 
 ## Técnicas
 
+- [**Coroutines no Rust nightly - Como os generators do Python**](./code_samples/coroutines/).
+
 - [**From Go to Rust com amor! - Invocando código Rust a partir de Go**](./code_samples/rust_loves_go/).
 
 - [**Rust FFI - Foreign Function Interface - Java, Python, NodeJS**](./code_samples/rust_ffi/).
