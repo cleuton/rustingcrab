@@ -1,0 +1,21 @@
+[package]
+name = "hello_solana"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+name = "hello_solana"
+crate-type = ["cdylib"]     # necessário para gerar .so
+
+[dependencies]
+solana-program = "2.2.1"
+
+
+[dev-dependencies]
+solana-client = "2.2.1"
+solana-sdk = "2.2.1"
+dirs = "5"
+anyhow = "1"
+
+[profile.dev]
+opt-level = 1

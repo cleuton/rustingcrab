@@ -23,6 +23,8 @@ Sim, em breve dois novos cursos sobre **Rust** para você:
 
 ## Técnicas
 
+- [**Solana blockchain - Primeiros passos**](./code_samples/solana-first-steps/).
+
 - [**Coroutines no Rust nightly - Como os generators do Python**](./code_samples/coroutines/).
 
 - [**From Go to Rust com amor! - Invocando código Rust a partir de Go**](./code_samples/rust_loves_go/).
