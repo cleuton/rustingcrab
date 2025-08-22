@@ -23,6 +23,8 @@ Sim, em breve dois novos cursos sobre **Rust** para você:
 
 ## Técnicas
 
+- [**Análise de performance com profiler e flamegraph**](./code_samples/perf_prof/).
+
 - [**Solana blockchain - Primeiros passos**](./code_samples/solana-first-steps/).
 
 - [**Coroutines no Rust nightly - Como os generators do Python**](./code_samples/coroutines/).
