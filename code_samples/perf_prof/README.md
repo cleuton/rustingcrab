@@ -6,6 +6,8 @@
 
 ---
 
+[**ENGLISH version here**](./ENGLISH.md).
+
 [**Cleuton Sampaio**](https://linkedin.com/in/cleutonsampaio)
 
 [**Veja no GitHub**](https://github.com/cleuton/rustingcrab/tree/main/code_samples/perf_prof)

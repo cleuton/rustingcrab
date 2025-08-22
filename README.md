@@ -23,7 +23,7 @@ Sim, em breve dois novos cursos sobre **Rust** para você:
 
 ## Técnicas
 
-- [**Análise de performance com profiler e flamegraph**](./code_samples/perf_prof/).
+- [**Análise de performance com profiler e flamegraph**](./code_samples/perf_prof/). [**ENGLISH version**](./code_samples/perf_prof/ENGLISH.md).
 
 - [**Solana blockchain - Primeiros passos**](./code_samples/solana-first-steps/).
 
