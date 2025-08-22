@@ -6,11 +6,11 @@
 
 ---
 
-[**PORTUGUESE version**](./README.md).
+[**PORTUGUESE version**](README.md).
 
 [**Cleuton Sampaio**](https://linkedin.com/in/cleutonsampaio)
 
-[**Veja no GitHub**](https://github.com/cleuton/rustingcrab/tree/main/code_samples/perf_prof)
+[**See on GitHub**](https://github.com/cleuton/rustingcrab/tree/main/code_samples/perf_prof)
 
 # Performance Analysis with Flamegraph
 
@@ -34,6 +34,8 @@ There are two ways to plug this into the workflow. You can profile “externally
 
 `cargo bench` also generates a very interesting report of your code (`target/criterion/report/index.html`) with the distribution of times and several other statistics:
 
+<img src="criterion_report.png" height=400>
+
 ## The Example
 
 We created deliberately slow code, with an implicit problem, to try to identify with the **flamegraph**. The “slow” code we wrote was a word-count function purposely implemented inefficiently. For each line of text, it called `Regex::new` to compile a regex pattern and even created a second regex to “clean” each word. This means that instead of reusing a ready regex, it recompiled the search automaton thousands of times. In addition, it made unnecessary allocations (`to_string`, `to_lowercase`, `format!`, `clone`) and, in the end, recopied the entire map to sort by key size. The result is an artificial bottleneck: the flamegraph shows almost all time spent in internal `regex` functions related to automaton construction (`Builder::build*`), instead of the counting logic itself.
@@ -42,16 +44,30 @@ You [**can see this code here:**](./antes/src/lib.rs).
 
 In the project setup, we have this `Cargo.toml`:
 
-This section is the project’s **Cargo.toml**, which describes how Cargo should compile and which libraries to use. In summary:
+```toml
+[package]
+name = "slowwords"
+version = "0.1.0"
+edition = "2021"
 
-– The `[package]` section defines package metadata: name (`slowwords`), initial version (`0.1.0`), and Rust edition (`2021`).
-– The `[lib]` section indicates the project exposes a library called `slowwords`, whose main source code is in `src/lib.rs`.
-– In `[dependencies]`, we included the `regex` crate, version 1.10, to handle regular expressions. This is the main dependency used by the library code.
-– In `[dev-dependencies]`, we have dependencies needed only for development and performance testing:
-• `criterion`, version 0.7.0, provides the statistical benchmarking framework;
-• `pprof`, version 0.15 with the `flamegraph` feature, provides the embedded profiler that generates flamegraphs directly during benchmark execution.
-– The `[[bench]]` block declares a benchmark named `bench`, pointing to the file `benches/bench.rs` and disabling the default test harness (`harness = false`) so we can control execution via Criterion.
-– Finally, `[profile.bench] debug = true` ensures the benchmark binary is compiled with debug information, making symbols visible in the flamegraph and making it easier to identify functions in the report.
+[lib]
+name = "slowwords"
+path = "src/lib.rs"
+
+[dependencies]
+regex = "1.10"
+
+[dev-dependencies]
+criterion = "0.7.0"
+pprof = { version = "0.15", features = ["flamegraph"] }
+
+[[bench]]
+name = "bench"
+harness = false
+
+[profile.bench]
+debug = true
+```
 
 Thus, this project brings together three things: a library (`slowwords`), a statistical benchmark (Criterion), and an embedded profiler (pprof) to visualize where CPU time is being spent.
 
@@ -63,17 +79,26 @@ In this project, it loads the library function (`contar_palavras_*`), builds a l
 
 ## Identifying the "Culprit"
 
-After running `benches/bench.rs` with the command `cargo bench`, a `flamegraph.svg` file will be created in the project root.
+After running `benches/bench.rs` with the command `cargo bench`, a `flamegraph.svg` file will be created in the project root:
+
+<img src="flamegraph_antes.svg" height=600>
 
 It’s hard to visualize, but the widest bars near the top are the “culprits.” In our code, we have a `contar_palavras_lento` function and some wide bars above it. I zoomed in for you:
+
+<img src="culpado.png" height=300>
 
 We can see that it is invoking a series of “wide” and “red” functions, all related to regex compilation, meaning this function is compiling the regex for each word!
 
 And in the `criterion` report this is clear:
 
+<img src="criterion_antes.png" height=400>
+
 – The left graph is the estimated distribution of execution time for one iteration. It looks close to a symmetric normal curve, with no visible long tail. Therefore, there is no significant skew, although the slight deformation may signal something unexpected.
+
 – The mean (`Mean`) is **182.80 ms** per iteration. The value is indeed in milliseconds, confirming that each call takes hundreds of thousands of microseconds, i.e., hundreds of milliseconds — far more than acceptable for such a simple function.
+
 – The standard deviation (\~705 µs) and MAD (\~767 µs) are small relative to the mean (182 ms), indicating runs are consistent and stable.
+
 – The right figure shows individual samples per iteration; most cluster near the mean, with no extreme outliers.
 
 **Conclusion:** the function is consistently slow (around 182 ms per execution) due to the deliberate regex recompilation issue, although the time distribution is not technically “skewed.” The fact that the mean is in milliseconds confirms the artificial cost of regex recompilation completely dominated execution time.
@@ -84,13 +109,18 @@ Well, [**in the `after` version**](./depois/src/lib.rs) the code was changed to 
 
 After running `cargo bench` again, we see a new flamegraph:
 
+<img src="flamegraph_depois.svg" height=400>
+
 We no longer see wide bars above `contar_palavras_rapido`. But what exactly does this mean? Let’s look at the Criterion report:
 
-This Criterion report clearly shows the effect of fixing the static regex.
+<img src="criterion_depois.png" height=400>
 
 – **Average time:** dropped to about **451 µs** per iteration (less than half a millisecond). Compare with the **182 ms** of the slow version: that’s nearly a **400x improvement**.
+
 – **Distribution:** the left graph shows a well-centered, almost symmetric curve. The mean (451.83 µs) and median (451.20 µs) practically coincide, indicating no significant skew.
+
 – **Standard deviation:** \~1.8 µs, and MAD \~1.5 µs, values tiny relative to the mean. This shows the benchmark is extremely stable, with little variation between runs.
+
 – **Right graph:** now it’s a linear regression of cumulative times across iterations (Criterion feature). The blue line follows the points without major deviations — another sign of consistency.
 
 **Conclusion:**
@@ -113,41 +143,12 @@ How to identify: repeat tests under controlled conditions, observe variance in C
 If the **blame** lies in your code (wide bars inside and above it), then optimization is the right path. Here’s a concise checklist guided by flamegraph:
 
 1. Algorithm and complexity
-   – Replace O(n·m) with O(n log n) or O(n) before any micro-optimization.
-   – Avoid repeated work (memoization, moving work out of loops).
-
 2. Data structures
-   – Choose the right one for access: HashMap vs BTreeMap; Vec vs LinkedList.
-   – Preallocate (reserve) and reuse buffers; avoid intermediate collections.
-
 3. Allocations and copies
-   – Cut unnecessary `clone`, `to_string`, `format!`; prefer `&str`/slices.
-   – Avoid creating objects per iteration; use static/singleton objects (e.g., Regex).
-
 4. Strings and Unicode
-   – Only `to_lowercase`/normalize when needed; use ASCII fast-path.
-   – Avoid regex if a simple scanner will do.
-
 5. Hot loops
-   – Remove cold branches; hoist checks out; selective inlining (`#[inline]`).
-   – Batching: operate in blocks to reduce call and lock overhead.
-
 6. Cache locality and layout
-   – Linear access in `Vec`/slices; avoid scattered structures; compact data.
-   – Avoid “array of pointers”; prefer “struct of arrays” when appropriate.
-
 7. Concurrency and synchronization
-   – Reduce locks/contended atomics; use shards or lock-free when appropriate.
-   – Avoid ping-pong between threads; prefer fine-grained work-stealing.
-
 8. I/O and boundaries
-   – Buffer I/O; batch syscalls; avoid formatting/logging in hot paths.
-   – Disable heavy debug in production.
-
 9. Specialization and CPU
-   – Enable `target-cpu=native`, LTO/ThinLTO; consider SIMD (crates like `wide`/`std::simd`).
-   – Avoid obvious branch misprediction; use `#[cold]`/`#[expect]` when appropriate.
-
 10. Quick profile wins
-    – Attack frames with the highest “inclusive time”; validate each change in the flamegraph.
-    – Only then move to low-impact micro-optimizations.
