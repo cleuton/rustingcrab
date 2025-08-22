@@ -1,0 +1,22 @@
+[package]
+name = "slowwords"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+name = "slowwords"
+path = "src/lib.rs"
+
+[dependencies]
+regex = "1.10"
+
+[dev-dependencies]
+criterion = "0.7.0"
+pprof = { version = "0.15", features = ["flamegraph"] }
+
+[[bench]]
+name = "bench"
+harness = false
+
+[profile.bench]
+debug = true
