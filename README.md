@@ -18,7 +18,7 @@ Este é o lugar para você **enferrujar** com classe! Exemplos, cursos e até op
 
 Sim, em breve dois novos cursos sobre **Rust** para você:
 
-- **Rust kindergarten**: Para você, que quer aprender Rust e melhorar a sua fluência na linguagem - **GRATUITO !**
+- [**Rust kindergarten no ar!**](https://github.com/cleuton/rust_kindergarten/tree/main): O material do curso está no ar. Em breve postarei os vídeos e colocarei o link no curso. Para você, que quer aprender Rust e melhorar a sua fluência na linguagem - **GRATUITO !**
 - **Next Level Rust**: For you, who already know the basics, and want to level up your Rust skills - **Udemy !**
 
 ## Técnicas
