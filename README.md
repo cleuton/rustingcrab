@@ -23,6 +23,8 @@ Sim, em breve dois novos cursos sobre **Rust** para você:
 
 ## Técnicas
 
+- [**Rust e Java no octógono**](./code_samples/rust_vs_java/).
+
 - [**Gossip dissemination com Rust**](./code_samples/gossip/).
 
 - [**Análise de performance com profiler e flamegraph**](./code_samples/perf_prof/). [**ENGLISH version**](./code_samples/perf_prof/ENGLISH.md).
