@@ -10,7 +10,7 @@
 
 [**Veja no GitHub**](https://github.com/cleuton/rustingcrab/tree/main/code_samples/rust_vs_go)
 
-[**ENGLISH VERSION**](./ENGLISH.md)
+[**ENGLISH VERSION**](./performance-test/ENGLISH.md)
 
 # Rust vs Go
 
