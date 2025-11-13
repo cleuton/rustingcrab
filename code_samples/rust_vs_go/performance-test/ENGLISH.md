@@ -1,7 +1,3 @@
-Aqui está a **versão traduzida para Inglês**, **sem markdown**, **flat**, mantendo apenas uma formatação simples em texto puro (txt).
-Não inclui imagens, links ou formatação markdown.
-
----
 
 Rust vs Go
 
@@ -163,4 +159,3 @@ Choose Go FastHTTP only if:
 
 ## For this kind of service, Rust Axum is clearly superior in almost all aspects.
 
-Se quiser, posso gerar uma **versão resumida**, uma **versão mais formal**, ou até uma **versão para post no LinkedIn**.
