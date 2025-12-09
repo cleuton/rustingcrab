@@ -23,6 +23,8 @@ Sim, em breve dois novos cursos sobre **Rust** para você:
 
 ## Técnicas
 
+- [**OpenTelemetry e Jaeger com distributed tracing**](./code_samples/opentelemetry/).
+
 - [**Rust e Java no octógono**](./code_samples/rust_vs_java/).
 
 - [**Gossip dissemination com Rust**](./code_samples/gossip/).
