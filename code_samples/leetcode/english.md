@@ -6,39 +6,41 @@
 
 <img src="./1751092360584.jpeg" height=300>
 
-[**ENGLISH VERSION**](./english.md)
+[**PORTUGUESE**](./README.md)
 
-Eu vi esse post de [**Ashish Pratap Singh**](https://www.linkedin.com/in/ashishps1?miniProfileUrn=urn%3Ali%3Afsd_profile%3AACoAABT9QE0BiP3CAWgDMTJ5NLKmcGaVCgNn_nI&lipi=urn%3Ali%3Apage%3Ad_flagship3_detail_base%3BqTuSBrb%2BSWC2s8J1moQR%2Fg%3D%3D) no **Linkedin** e, como já tinha escrito implementações em **Rust** para quase todos esses tipos de problemas, resolvi criar essa página com as explicações e os fontes. 
+I saw this post by [**Ashish Pratap Singh**](https://www.linkedin.com/in/ashishps1?miniProfileUrn=urn%3Ali%3Afsd_profile%3AACoAABT9QE0BiP3CAWgDMTJ5NLKmcGaVCgNn_nI&lipi=urn%3Ali%3Apage%3Ad_flagship3_detail_base%3BqTuSBrb%2BSWC2s8J1moQR%2Fg%3D%3D) on **LinkedIn** and, since I had already written implementations in **Rust** for almost all of these types of problems, I decided to create this page with explanations and source code.
 
-Tive que acrescentar uns dois ou três, mas ficou muito legal para você, que está estudando para **entrevistas** de **emprego**. 
+I had to add two or three more, but it turned out really great for you, who are studying for **job interviews**.
+
 
 
 ## 1) Prefix Sum
 
-Prefix Sum: esse padrão aparece em problemas que exigem calcular rapidamente a soma de um subarray ou responder múltiplas consultas de soma em intervalos. Exemplos típicos são “Subarray Sum Equals K” (encontrar quantos subarrays têm soma igual a um valor dado) e “Range Sum Query” (criar uma estrutura que retorne a soma de elementos entre dois índices em tempo constante após um pré-processamento).
+**Prefix Sum:** this pattern appears in problems that require quickly calculating the sum of a subarray or answering multiple range sum queries. Typical examples include “Subarray Sum Equals K” (finding how many subarrays have a sum equal to a given value) and “Range Sum Query” (building a structure that returns the sum of elements between two indices in constant time after preprocessing).
 
-Vejamos um problema de "Subarray Sum Equals K": 
+Let’s look at a “Subarray Sum Equals K” problem:
 
-Dado um vetor de inteiros `nums` e um inteiro `k`, retorne o número de subarrays contíguos cuja soma seja exatamente `k`.
-Um subarray contíguo é uma sequência de elementos adjacentes em `nums`.
+Given an integer array `nums` and an integer `k`, return the number of contiguous subarrays whose sum is exactly `k`.
+A contiguous subarray is a sequence of adjacent elements in `nums`.
 
-**Exemplos**
+**Examples**
 
-* Entrada: `nums = [1, 1, 1]`, `k = 2`
-  Saída: `2`
-  Explicação: os subarrays `[1,1]` (índices 0–1) e `[1,1]` (1–2) somam 2.
 
-* Entrada: `nums = [1, 2, 3]`, `k = 3`
-  Saída: `2`
-  Explicação: os subarrays `[1,2]` (0–1) e `[3]` (2–2) somam 3.
+* Input: `nums = [1, 1, 1]`, `k = 2`
+  Output: `2`
+  Explanation: The subarrays `[1,1]` (indexes 0–1) e `[1,1]` (1–2) result in 2.
 
-**Restrições**
+* Input: `nums = [1, 2, 3]`, `k = 3`
+  Output: `2`
+  Explanation: The subarrays `[1,2]` (0–1) e `[3]` (2–2) result in 3.
+
+**Limitations**
 
 * `1 ≤ nums.len() ≤ 2·10⁴`
 * `-1000 ≤ nums[i] ≤ 1000`
 * `-10⁷ ≤ k ≤ 10⁷`
 
-Aqui está uma implementação: 
+Here's an implementation: 
 
 ```Rust
 use std::collections::HashMap;
@@ -47,7 +49,7 @@ fn subarray_sum(nums: &[i32], k: i32) -> i32 {
     let mut soma_prefix = 0;
     let mut freq = HashMap::<i32, usize>::new();
     let mut resposta = 0;
-    freq.insert(0, 1); // Para lidar com subarrays que começam do índice 0
+    freq.insert(0, 1); // To deal with subarrays that starts on index 0
 
     for &valor in nums {
         soma_prefix += valor; 
@@ -75,27 +77,29 @@ fn main() {
 }
 ```
 
-Essa função conta, em tempo linear, quantos subarrays de soma igual a k existem num slice, mantendo uma soma acumulada e um `HashMap` que guarda quantas vezes cada valor de prefix sum já apareceu (começando com `0→1` para subarrays que iniciam em 0). A cada elemento você atualiza a soma, olha quantas vezes já viu `(soma_prefix–k)` (cada ocorrência é um subarray válido) e depois incrementa a frequência do `soma_prefix` atual; no `main` são apenas três testes exemplificando esse comportamento.
+This function counts, in linear time, how many subarrays with sum equal to `k` exist in a slice by maintaining a running sum and a `HashMap` that stores how many times each prefix sum value has already appeared, starting with `0→1` to account for subarrays that begin at index 0. For each element, you update the sum, check how many times `(prefix_sum - k)` has already been seen, since each occurrence represents a valid subarray, and then increment the frequency of the current `prefix_sum`. In `main`, there are just three test cases illustrating this behavior.
+
 
 ---
 
 ## 2) Two Pointers
 
-Two Pointers: consiste em usar dois índices que se movem em direções (ou velocidades) diferentes num mesmo array para reduzir a complexidade. Problemas clássicos incluem “Container With Most Water” (maximizar área entre duas linhas).
+**Two Pointers:** consists of using two indices that move in different directions, or at different speeds, within the same array to reduce complexity. Classic problems include “Container With Most Water” (maximizing the area between two lines).
 
-Um problema clássico é: 
+A classic problem is:
 
-Dado um vetor desordenado de inteiros, retorne os índices de dois elementos que, somados,
-resultam no valor alvo fornecido. Assuma que cada entrada tem uma e apenas uma solução e que
-não é permitido utilizar o mesmo elemento do vetor mais de uma vez.
-Pode retornar os índices em qualquer ordem.
-Exemplo:
-- Vetor: 2,7,11,15, alvo: 9;
-- Resultado: 0,1 (ou 1,0);
-- Explicação: os elementos zero e um (2 e 7) são os únicos cuja soma é 9 (o valor alvo).
-Você pode criar uma implementação que tenha complexidade de tempo menor que O(n<sup>2</sup>)?
+Given an unsorted array of integers, return the indices of two elements whose sum equals the given target value. Assume that each input has one and only one solution, and that it is not allowed to use the same array element more than once.
+You may return the indices in any order.
 
-Aqui está uma implementação utilizando um HashMap com o valor e o índice: 
+Example:
+
+* Array: 2,7,11,15, target: 9;
+* Result: 0,1 (or 1,0);
+* Explanation: elements zero and one (2 and 7) are the only ones whose sum is 9 (the target value).
+
+Can you create an implementation with time complexity lower than O(n<sup>2</sup>)?
+
+Here is an implementation using a HashMap with the value and the index:
 
 ```Rust
 use std::collections::HashMap;
@@ -132,19 +136,20 @@ fn main() {
 
 ## 3) Sliding Window
 
-Sliding Window: útil quando você precisa extrair a melhor ou pior subsequência contígua de comprimento variável. Casos comuns são “Longest Substring Without Repeating Characters” (janelões que cobrem o maior trecho sem caracteres repetidos) e “Minimum Window Substring” (menor trecho que contenha todos os caracteres de um padrão).
+**Sliding Window:** useful when you need to extract the best or worst contiguous subsequence of variable length. Common cases include “Longest Substring Without Repeating Characters” (large windows covering the longest segment without repeated characters) and “Minimum Window Substring” (the shortest segment containing all the characters of a pattern).
 
-Um problema clássico: 
+A classic problem:
 
-Dado um string e um vetor com palavras de tamanhos iguais, retorne as posições onde estas
-palavras aparecem concatenadas no string original, em qualquer ordem.
+Given a string and an array of words of equal length, return the positions where these
+words appear concatenated in the original string, in any order.
 
-- Exemplo: "tensotestetestevistatestetenso", ["tenso","teste"]
-    Saída: [0,20]
-- Exemplo: "carroratopenaratoratopanocarrocarrorato", ["carro","pano","rato","carro"]
-    Saída: [ ]
+* Example: "tensotestetestevistatestetenso", ["tenso","teste"]
+  Output: [0,20]
+* Example: "carroratopenaratoratopanocarrocarrorato", ["carro","pano","rato","carro"]
+  Output: [ ]
 
-Aqui vai minha implementação: 
+Here is my implementation:
+
 
 ```Rust
 use std::collections::HashMap;
@@ -155,30 +160,30 @@ fn encontrar(texto: &str, palavras: &[&str]) -> Option<Vec<usize>> {
     let window_len = word_len * num_words;
     let mut resultados = Vec::new();
 
-    // mapa de frequência das palavras-alvo
+    // frequency map
     let mut target_count = HashMap::new();
     for &w in palavras {
         *target_count.entry(w).or_insert(0) += 1;
     }
 
-    // para cada alinhamento possível dentro do tamanho da palavra
+    // for each possible alignment within the word length
     for offset in 0..word_len {
         let mut left = offset;
         let mut right = offset;
         let mut seen = HashMap::new();
         let mut count = 0;
 
-        // desliza a janela em blocos de word_len
+        // Slide the window in word_len blocks
         while right + word_len <= texto.len() {
             let word = &texto[right..right + word_len];
             right += word_len;
 
             if target_count.contains_key(word) {
-                // conta esta palavra na janela vista
+                // count the word 
                 *seen.entry(word).or_insert(0) += 1;
                 count += 1;
 
-                // se passou do limite de ocorrências, move left até equilibrar
+                // if it exceeds the occurrence limit, move left until it balances
                 while seen[word] > target_count[word] {
                     let left_word = &texto[left..left + word_len];
                     *seen.get_mut(left_word).unwrap() -= 1;
@@ -186,12 +191,12 @@ fn encontrar(texto: &str, palavras: &[&str]) -> Option<Vec<usize>> {
                     count -= 1;
                 }
 
-                // janela completa encontrada
+                // Whole window
                 if count == num_words {
                     resultados.push(left);
                 }
             } else {
-                // palavra não esperada: reinicia a janela
+                // unexpected word
                 seen.clear();
                 count = 0;
                 left = right;
@@ -222,51 +227,52 @@ fn main() {
 }
 ```
 
-A função `encontrar` primeiro calcula o tamanho de cada palavra e o comprimento total da janela (palavras × tamanho), depois monta um `HashMap` (`target_count`) com a frequência de cada palavra-alvo. Para cada possível “offset” dentro de uma palavra ela desliza dois ponteiros (`left` e `right`) em blocos do tamanho de uma palavra, mantendo outro `HashMap` (`seen`) que conta quantas vezes cada palavra entrou na janela. Se encontra uma palavra fora do esperado, limpa tudo e reinicia a janela; se ultrapassa a frequência desejada, avança `left` até equilibrar; e sempre que o número de palavras vistas chega ao total necessário, grava o índice `left`. No fim, retorna `Some(vetor de índices)` ou `None` se não houver soluções. Podemos considerar essa implementação como `O(n)`.
+The function `encontrar` first computes the length of each word and the total window length (words × size), then builds a `HashMap` (`target_count`) with the frequency of each target word. For each possible “offset” within a word, it slides two pointers (`left` and `right`) in steps equal to the word length, maintaining another `HashMap` (`seen`) that counts how many times each word has entered the window. If it encounters an unexpected word, it clears everything and restarts the window; if it exceeds the desired frequency, it advances `left` until it balances; and whenever the number of seen words reaches the required total, it records the index `left`. In the end, it returns `Some(vector of indices)` or `None` if there are no solutions. We can consider this implementation as `O(n)`.
 
 ---
 
 ## 4) Fast & Slow Pointers
 
-Fast & Slow Pointers: também conhecido como tortoise and hare, serve para detectar ciclos ou achar pontos médios em estruturas sequenciais. Exemplos: “Linked List Cycle” (detectar se há ciclo numa lista ligada), “Linked List Cycle II” (achar início do ciclo) e “Middle of the Linked List” (encontrar o nó central).
+**Fast & Slow Pointers:** also known as tortoise and hare, is used to detect cycles or find middle points in sequential structures. Examples include “Linked List Cycle” (detecting if there is a cycle in a linked list), “Linked List Cycle II” (finding the start of the cycle), and “Middle of the Linked List” (finding the middle node).
 
-Um problema típico: 
+A typical problem:
 
 **Middle of the Linked List**
-Dada a cabeça de uma lista simplesmente ligada, retorne o nó que está no meio da lista. Se a lista tiver número par de elementos, retorne o segundo dos dois nós centrais.
+Given the head of a singly linked list, return the node that is in the middle of the list. If the list has an even number of elements, return the second of the two middle nodes.
 
-**Exemplos**
+**Examples**
 
-1. Entrada: `1 → 2 → 3 → 4 → 5`
-   Saída: nó com valor `3`
-   Explicação: ao final, `slow` percorre 3 passos (1→2→3) enquanto `fast` vai 1→3→5 e para em `None`.
+1. Input: `1 → 2 → 3 → 4 → 5`
+   Output: node with value `3`
+   Explanation: at the end, `slow` moves 3 steps (1→2→3) while `fast` goes 1→3→5 and stops at `None`.
 
-2. Entrada: `1 → 2 → 3 → 4`
-   Saída: nó com valor `3`
-   Explicação: aqui a lista tem 4 nós. Depois de dois avanços de `fast` (1→3→None), `slow` está em 3, o segundo do par central (2 e 3).
+2. Input: `1 → 2 → 3 → 4`
+   Output: node with value `3`
+   Explanation: here the list has 4 nodes. After two advances of `fast` (1→3→None), `slow` is at 3, the second of the middle pair (2 and 3).
 
-Minha implementação: 
+My implementation:
+
 
 ```Rust
 use std::collections::LinkedList;
 
 fn encontrar_meio(lista: &LinkedList<i32>) -> Option<&i32> {
-    // iteradores para slow (1 passo) e fast (2 passos)
+    // iterators for `slow` (1 step) and `fast` (2 steps)
     let mut slow = lista.iter();
     let mut fast = lista.iter();
-    // já pega o primeiro elemento ou retorna None se vazia
+    // already takes the first element or returns None if empty
     let mut mid = slow.next()?;
 
-    // enquanto o fast puder dar ao menos um passo...
+    // while `fast` can take at least one step...
     while fast.next().is_some() {
-        // tenta dar o segundo passo em fast
+        // try second step
         if fast.next().is_some() {
-            // só então avança slow e atualiza mid
+            // then advances to slow
             if let Some(val) = slow.next() {
                 mid = val;
             }
         } else {
-            // fast não pôde dar o 2º passo: lista par, slow já está no 2º meio
+            // Fast cannot do another step
             break;
         }
     }
@@ -275,58 +281,58 @@ fn encontrar_meio(lista: &LinkedList<i32>) -> Option<&i32> {
 }
 
 fn main() {
-    // lista ímpar: [1,2,3,4,5], meio → 3
+    //  [1,2,3,4,5], middle → 3
     let mut l1 = LinkedList::new();
     l1.extend([1, 2, 3, 4, 5]);
-    println!("{:?}", encontrar_meio(&l1)); // Some(3)
+    println!("{:?}", encontrar_meio(&l1)); // add(3)
 
-    // lista par: [10,14,29,55,65,89], meias são 29 e 55 → retorna 55
+    //  [10,14,29,55,65,89], middle numbers 29 e 55 → return 55
     let mut l2 = LinkedList::new();
     l2.extend([10, 14, 29, 55, 65, 89]);
-    println!("{:?}", encontrar_meio(&l2)); // Some(55)
+    println!("{:?}", encontrar_meio(&l2)); // add(55)
 
-    // vazia → None
+    // empty → None
     let l3: LinkedList<i32> = LinkedList::new();
     println!("{:?}", encontrar_meio(&l3)); // None
 }
 ```
 
-Usei dois iteradores sobre a lista, `slow` e `fast`. Primeiro pego o primeiro elemento em `mid` (ou retornamos `None` se a lista estiver vazia). Depois, num laço, faço:
+I used two iterators over the list, `slow` and `fast`. First, I take the first element into `mid` or return `None` if the list is empty. Then, in a loop, I do:
 
-* Se `fast` conseguir avançar duas vezes, então avanço `slow` uma vez e atualizo `mid` para esse novo nó de `slow`.
-* Se `fast` não conseguir dar o segundo avanço, paro, pois isso acontece exatamente quando há um número par de nós, e `mid` já foi ajustado para o “segundo” do par central.
+* If `fast` can advance twice, then I advance `slow` once and update `mid` to this new `slow` node.
+* If `fast` cannot make the second advance, I stop, as this happens exactly when there is an even number of nodes, and `mid` has already been adjusted to the “second” of the central pair.
 
-No fim, `mid` aponta para o valor correto (o nó do meio em listas ímpares, ou o segundo nó do meio em listas pares), e a função retorna `Some(mid)`.
+In the end, `mid` points to the correct value, the middle node in odd-length lists or the second middle node in even-length lists, and the function returns `Some(mid)`.
 
 ## 5) LinkedList In-place Reversal
 
-LinkedList In-place Reversal: foca em inverter ligações de nós sem alocar memória extra. Destaques são “Reverse Linked List” (inverter lista inteira) e “Reverse Nodes in k-Group” (inverter blocos de k nós por vez, mantendo o restante).
+**LinkedList In-place Reversal:** focuses on reversing node links without allocating extra memory. Highlights include “Reverse Linked List” (reversing the entire list) and “Reverse Nodes in k-Group” (reversing blocks of k nodes at a time while keeping the rest intact).
 
-Um problema dessa categoria seria: 
+A problem in this category would be:
 
-Dada a cabeça de uma lista simplesmente ligada, escreva uma função que inverta todos os ponteiros de modo a retornar a nova cabeça, sem usar memória adicional além de algumas variáveis temporárias.
+Given the head of a singly linked list, write a function that reverses all pointers in order to return the new head, without using additional memory beyond a few temporary variables.
 
-**Exemplos**
+**Examples**
 
-* Entrada: `1 → 2 → 3 → 4 → 5 → None`
-  Saída: `5 → 4 → 3 → 2 → 1 → None`
+* Input: `1 → 2 → 3 → 4 → 5 → None`
+  Output: `5 → 4 → 3 → 2 → 1 → None`
 
-* Entrada: `1 → 2 → None`
-  Saída: `2 → 1 → None`
+* Input: `1 → 2 → None`
+  Output: `2 → 1 → None`
 
-* Entrada: `None`
-  Saída: `None`
+* Input: `None`
+  Output: `None`
 
 ```Rust
 use std::collections::LinkedList;
 
 fn reverse_list<T>(list: &mut LinkedList<T>) {
     let mut rev = LinkedList::new();
-    // vai retirando do front da lista original e empurrando no front da nova
+    // keeps removing from the front of the original list and pushing to the front of the new one
     while let Some(elem) = list.pop_front() {
         rev.push_front(elem);
     }
-    // substitui o conteúdo da lista original pela invertida
+    // replaces the contents of the original list with the reversed one
     *list = rev;
 }
 
@@ -334,43 +340,43 @@ fn main() {
     let mut lista = LinkedList::from([1, 2, 3, 4, 5]);
     println!("Original: {:?}", lista);
     reverse_list(&mut lista);
-    println!("Invertida: {:?}", lista);
+    println!("Inverted: {:?}", lista);
 }
 
 ```
 
-A função recebe uma `&mut LinkedList<T>`, cria uma lista auxiliar vazia `rev`, então, enquanto a original não estiver vazia, faz `pop_front()` (`O(1)`) e imediatamente `push_front(elem)` em `rev` (`O(1)`), invertendo assim a ordem dos nós. Quando termina, faz `*lista = rev`, substituindo todo o conteúdo de `lista` pelo de `rev`; os nós antigos são removidos com segurança pelo Rust, sem deixar referências “penduradas” (dangling). Como cada elemento é movido exatamente uma vez, o tempo é **O(n)** e, como não há nenhuma alocação extra além dos ponteiros temporários, o espaço extra é **O(1)**.
+The function receives a `&mut LinkedList<T>`, creates an empty auxiliary list `rev`, then, while the original is not empty, it performs `pop_front()` (`O(1)`) and immediately `push_front(elem)` into `rev` (`O(1)`), thus reversing the order of the nodes. When finished, it does `*lista = rev`, replacing all the contents of `lista` with those of `rev`; the old nodes are safely removed by Rust, without leaving dangling references. Since each element is moved exactly once, the time is **O(n)** and, as there is no extra allocation beyond temporary pointers, the extra space is **O(1)**.
 
 ---
 
 ## 6) Monotonic Stack
 
-Monotonic Stack: pilha que cresce ou decresce de forma ordenada para responder rapidamente a consultas de “próximo maior” ou “próximo menor”. Problemas típicos são “Next Greater Element” e “Daily Temperatures” (calcular em quantos dias a temperatura futura será maior).
+**Monotonic Stack:** a stack that grows or shrinks in ordered fashion to quickly answer “next greater” or “next smaller” queries. Typical problems include “Next Greater Element” and “Daily Temperatures” (calculating in how many days the future temperature will be higher).
 
-Um problema típico: 
+A typical problem:
 
 **Next Greater Element**
-Dado um array de inteiros, para cada elemento encontre o primeiro valor à sua direita que seja maior; se não existir, use −1.
+Given an array of integers, for each element find the first value to its right that is greater; if none exists, use −1.
 
-**Descrição**
-Você recebe `nums: Vec<i32>`. Retorne um vetor `res` do mesmo tamanho, onde
+**Description**
+You are given `nums: Vec<i32>`. Return a vector `res` of the same size, where
 
 ```text
-res[i] = primeiro nums[j] > nums[i] com j > i, ou −1 se não houver.
+res[i] = the first nums[j] > nums[i] with j > i, or −1 if there is none.
 ```
 
-- Complexidade de tempo: `O(n)`.
+* Time complexity: `O(n)`.
 
-**Exemplos**
+**Examples**
 
-* Entrada: `[2, 1, 2, 4, 3]`
-  Saída:   `[4, 2, 4, -1, -1]`
-* Entrada: `[5, 4, 3, 2, 1]`
-  Saída:   `[-1, -1, -1, -1, -1]`
-* Entrada: `[1, 3, 2, 5]`
-  Saída:   `[3, 5, 5, -1]`
+* Input: `[2, 1, 2, 4, 3]`
+  Output:   `[4, 2, 4, -1, -1]`
+* Input: `[5, 4, 3, 2, 1]`
+  Output:   `[-1, -1, -1, -1, -1]`
+* Input: `[1, 3, 2, 5]`
+  Output:   `[3, 5, 5, -1]`
 
-Minha implementação: 
+My implementation:
 
 ```Rust
 fn encontrar_proximo_maior(numeros: &[i32]) -> Vec<i32> {
@@ -380,7 +386,7 @@ fn encontrar_proximo_maior(numeros: &[i32]) -> Vec<i32> {
     for i in (0..numeros.len()).rev() {
         let numero = numeros[i];
 
-        // Remove elementos menores ou iguais ao atual
+        // Remove elements less than or equal to the current element
         while let Some(&topo) = pilha.last() {
             if topo <= numero {
                 pilha.pop();
@@ -389,12 +395,12 @@ fn encontrar_proximo_maior(numeros: &[i32]) -> Vec<i32> {
             }
         }
 
-        // Se ainda há elementos, o topo é o próximo maior
+        // Are there elements?
         if let Some(&topo) = pilha.last() {
             resultado[i] = topo;
         }
 
-        // Adiciona o número atual à pilha
+        // Add current number to the Stack
         pilha.push(numero);
     }
 
@@ -408,33 +414,33 @@ fn main() {
 }
 ```
 
-O código percorre o array de trás para frente. Para cada elemento, remove da pilha tudo que é menor ou igual a ele. O que sobra no topo da pilha é o próximo maior. Se não tiver nada, fica -1. O elemento atual é adicionado na pilha no final. Funciona em O(n).
+The code iterates through the array from right to left. For each element, it removes from the stack everything that is smaller than or equal to it. What remains at the top of the stack is the next greater element. If there is nothing, it becomes -1. The current element is added to the stack at the end. It runs in O(n).
 
 ---
 
 ## 7) Top ‘K’ Elements
 
-Top ‘K’ Elements: extração dos k maiores, menores ou mais frequentes valores usando heap ou seleção linear. Exemplos incluem “Top K Frequent Elements” (achar os k elementos mais comuns em um array) e “Kth Largest Element in an Array” (encontrar k-ésimo maior valor).
+**Top ‘K’ Elements:** extracting the k largest, smallest, or most frequent values using a heap or linear selection. Examples include “Top K Frequent Elements” (finding the k most common elements in an array) and “Kth Largest Element in an Array” (finding the k-th largest value).
 
-Eis um problema típico: 
+Here is a typical problem:
 
 **Top K Frequent Elements**
-Dado um vetor não-vazio de inteiros e um inteiro k, retorne os k elementos que aparecem com maior frequência.
+Given a non-empty array of integers and an integer k, return the k elements that appear most frequently.
 
-Por exemplo:
+For example:
 
-* Entrada: `nums = [1,1,1,2,2,3]`, `k = 2`
-  Saída: `[1,2]`
-  Explicação: o número 1 aparece 3 vezes, o 2 aparece 2 vezes, o 3 aparece 1 vez; os dois mais frequentes são \[1,2].
+* Input: `nums = [1,1,1,2,2,3]`, `k = 2`
+  Output: `[1,2]`
+  Explanation: the number 1 appears 3 times, 2 appears 2 times, and 3 appears 1 time; the two most frequent are `[1,2]`.
 
-* Entrada: `nums = [4,4,5,5,6]`, `k = 1`
-  Saída: `[4]`
-  Explicação: 4 e 5 aparecem 2 vezes cada, mas como só queremos um elemento, qualquer um dos dois é válido.
+* Input: `nums = [4,4,5,5,6]`, `k = 1`
+  Output: `[4]`
+  Explanation: 4 and 5 both appear 2 times, but since we only want one element, either of the two is valid.
 
-* Entrada: `nums = [7]`, `k = 1`
-  Saída: `[7]`
+* Input: `nums = [7]`, `k = 1`
+  Output: `[7]`
 
-Minha implementação: 
+My implementation:
 
 ```Rust
 use std::collections::{HashMap, BinaryHeap};
@@ -447,16 +453,16 @@ fn top_k_frequente(nums: Vec<i32>, k: i32) -> Vec<i32> {
         *contagem.entry(num).or_insert(0) += 1;
     }
 
-    // min-heap pela frequência: o topo será sempre o menor (freq, num)
+    // frequency min-heap 
     let mut heap: BinaryHeap<Reverse<(i32, i32)>> = BinaryHeap::new();
     for (&num, &qtd) in &contagem {
         heap.push(Reverse((qtd, num)));
         if heap.len() > k {
-            heap.pop(); // agora remove quem tem frequência menor
+            heap.pop(); // remove the element with smaller frequency
         }
     }
 
-    // extrai só os números restantes
+    // extract only the remaining numbers
     heap.into_iter()
         .map(|Reverse((_, num))| num)
         .collect()
@@ -466,87 +472,29 @@ fn main() {
     let nums = vec![1, 1, 1, 2, 2, 3];
     let k = 2;
     let res = top_k_frequente(nums, k);
-    println!("{:?}", res); // saída: [1, 2] (ou [2, 1])
+    println!("{:?}", res); // output: [1, 2] (ou [2, 1])
 }
 ```
 
-A função começa contando a frequência de cada número com um `HashMap`. Depois, usa uma **min-heap** para manter apenas os `k` elementos com maior frequência: sempre que a heap tem mais que `k` elementos, ela remove o de menor frequência. Assim, no final, sobram exatamente os `k` mais frequentes. A complexidade é `O(n log k)`, o que é eficiente para entradas grandes.
-
-Um típico problema seria: 
-
-**Top K Frequent Elements**
-Dado um vetor não-vazio de inteiros e um inteiro k, retorne os k elementos que aparecem com maior frequência.
-
-Por exemplo:
-
-* Entrada: `nums = [1,1,1,2,2,3]`, `k = 2`
-  Saída: `[1,2]`
-  Explicação: o número 1 aparece 3 vezes, o 2 aparece 2 vezes, o 3 aparece 1 vez; os dois mais frequentes são \[1,2].
-
-* Entrada: `nums = [4,4,5,5,6]`, `k = 1`
-  Saída: `[4]`
-  Explicação: 4 e 5 aparecem 2 vezes cada, mas como só queremos um elemento, qualquer um dos dois é válido.
-
-* Entrada: `nums = [7]`, `k = 1`
-  Saída: `[7]`
-
-Uma abordagem típica usa um `HashMap` para contar frequências e depois um heap (máximo ou mínimo de tamanho k) para extrair os k mais frequentes em O(n log k) tempo.
-
-Eis uma implementação bem simples: 
-
-```Rust
-use std::collections::{HashMap, BinaryHeap};
-use std::cmp::Reverse;
-
-fn top_k_frequente(nums: Vec<i32>, k: i32) -> Vec<i32> {
-    let k = k as usize;
-    let mut contagem = HashMap::new();
-    for num in nums {
-        *contagem.entry(num).or_insert(0) += 1;
-    }
-
-    // min-heap pela frequência: o topo será sempre o menor (freq, num)
-    let mut heap: BinaryHeap<Reverse<(i32, i32)>> = BinaryHeap::new();
-    for (&num, &qtd) in &contagem {
-        heap.push(Reverse((qtd, num)));
-        if heap.len() > k {
-            heap.pop(); // agora remove quem tem frequência menor
-        }
-    }
-
-    // extrai só os números restantes
-    heap.into_iter()
-        .map(|Reverse((_, num))| num)
-        .collect()
-}
-
-fn main() {
-    let nums = vec![1, 1, 1, 2, 2, 3];
-    let k = 2;
-    let res = top_k_frequente(nums, k);
-    println!("{:?}", res); // saída: [1, 2] (ou [2, 1])
-}
-```
-
-A função começa contando a frequência de cada número com um `HashMap`. Depois, usa uma **min-heap** para manter apenas os `k` elementos com maior frequência: sempre que a heap tem mais que `k` elementos, ela remove o de menor frequência. Assim, no final, sobram exatamente os `k` mais frequentes. A complexidade é `O(n log k)`, o que é eficiente para entradas grandes.
+The function starts by counting the frequency of each number using a `HashMap`. Then, it uses a **min-heap** to keep only the `k` elements with the highest frequency: whenever the heap has more than `k` elements, it removes the one with the lowest frequency. This way, in the end, exactly the `k` most frequent elements remain. The complexity is `O(n log k)`, which is efficient for large inputs.
 
 ---
 
 ## 8) Overlapping Intervals
 
-Overlapping Intervals: lidar com intervalos que se cruzam, geralmente requerendo ordenação e fusão. “Merge Intervals” (combinar segmentos sobrepostos), “Insert Interval” (inserir e fundir) e “Meeting Rooms II” (calcular salas mínimas para horários).
+**Overlapping Intervals:** dealing with intervals that overlap, usually requiring sorting and merging. “Merge Intervals” (combining overlapping segments), “Insert Interval” (inserting and merging), and “Meeting Rooms II” (calculating the minimum number of rooms for schedules).
 
-Aqui está um problema bem típico deste tipo: 
+Here is a very typical problem of this kind:
 
-Você tem várias atividades a fazer, cada uma com horário de início e final. Escolha a maior quantidade de atividades que você pode executar em um dia, considerando que só pode fazer uma delas a cada momento. São fornecidos dois vetores: um com a hora de início das atividades e outro com a hora final. Mostre os horários de início e fim das atividades selecionadas. 
+You have several activities to do, each with a start and end time. Choose the largest number of activities that you can perform in a day, considering that you can only do one of them at a time. Two arrays are provided: one with the start times of the activities and another with the end times. Show the start and end times of the selected activities.
 
-**Exemplos**: 
+**Examples**:
 
-- início = [9,10,12,12,13,16,15]
-- fim = [11,13,13,17,15,20,17]
-- Resultado = [9,11], [12,13], [13,15], [15, 17]
+* start = [9,10,12,12,13,16,15]
+* end = [11,13,13,17,15,20,17]
+* Result = [9,11], [12,13], [13,15], [15, 17]
 
-Minha implementação: 
+My implementation:
 
 ```Rust
 fn atividades(inicios: &[i32], terminos: &[i32]) -> Vec<(i32, i32)> {
@@ -576,27 +524,27 @@ fn main() {
 }
 ```
 
-O código seleciona o máximo de intervalos que não se sobrepõem, usando uma estratégia gulosa, ordenando os intervalos pelo final e escolhendo sempre o primeiro que começa depois do final do último escolhido. Isso garante a maior quantidade possível de intervalos sem conflito. A complexidade é O(n log n) por causa da ordenação, onde n é o número de intervalos. O resto do algoritmo é linear.
+The code selects the maximum number of non-overlapping intervals using a greedy strategy, sorting the intervals by their end time and always choosing the first one that starts after the end of the last selected interval. This guarantees the largest possible number of conflict-free intervals. The complexity is O(n log n) because of the sorting, where n is the number of intervals. The rest of the algorithm is linear.
 
 ---
 
 ## 9) Modified Binary Search
 
-Modified Binary Search: adaptar busca binária para situações não trivial. Casos corriqueiros são “Search in Rotated Sorted Array” (procurar em array girado) e “Find Peak Element” (achar um pico local).
+**Modified Binary Search:** adapting binary search for non-trivial situations. Common cases are “Search in Rotated Sorted Array” (searching in a rotated array) and “Find Peak Element” (finding a local peak).
 
-Um problema típico: 
+A typical problem:
 
-Dadas duas fatias ordenadas `A` (tamanho n) e `B` (tamanho m), encontre em tempo `O(log n + log m)` a mediana do vetor resultante da concatenação ordenada de `A` e `B`. Se `(n+m)` for ímpar, é o elemento do meio; se par, a média dos dois valores centrais.
+Given two sorted slices `A` (size n) and `B` (size m), find in `O(log n + log m)` time the median of the sorted concatenation of `A` and `B`. If `(n+m)` is odd, it is the middle element; if even, it is the average of the two middle values.
 
-Exemplos
+Examples
 
-- A=[1,3,7,9], B=[1,5,9,20] → mediana = 6
-- A=[1,3,7,9], B=[1,9,20] → mediana = 7
-- A=[1,1,1,2], B=[3,4,8,9,10,10] → mediana = 3.5
-- A=[1,2,3,3,5], B=[8,11,13] → mediana = 4
-- A=[] , B=[1] → mediana = 1
+* A=[1,3,7,9], B=[1,5,9,20] → median = 6
+* A=[1,3,7,9], B=[1,9,20] → median = 7
+* A=[1,1,1,2], B=[3,4,8,9,10,10] → median = 3.5
+* A=[1,2,3,3,5], B=[8,11,13] → median = 4
+* A=[] , B=[1] → median = 1
 
-Eis minha implementação: 
+Here is my implementation:
 
 ```Rust
 fn mediana(slice1: &[i32], slice2: &[i32]) -> f64 {
@@ -605,18 +553,18 @@ fn mediana(slice1: &[i32], slice2: &[i32]) -> f64 {
     let total = tamanho1 + tamanho2;
     let metade = (total + 1) / 2;
 
-    // índices de partição em slice1 e slice2, podem ficar negativos ou além do fim
+    // partition indices in slice1 and slice2 may become negative or go beyond the end
     let mut fa = (tamanho1 + 1) / 2 - 1;
     let mut fb = metade - (fa + 1) - 1;
 
     loop {
-        // pega o valor ou +/− infinito conforme out of bounds
+        // takes the value or +/− infinity if out of bounds
         let p1  = if fa  < 0          { i32::MIN } else { slice1[fa  as usize] };
         let p1o = if fa+1 >= tamanho1    { i32::MAX } else { slice1[(fa+1) as usize] };
         let p2  = if fb  < 0          { i32::MIN } else { slice2[fb  as usize] };
         let p2o = if fb+1 >= tamanho2    { i32::MAX } else { slice2[(fb+1) as usize] };
 
-        // partição correta?
+        // correct partition?
         if p1 <= p2o && p2 <= p1o {
             return if total % 2 == 0 {
                 (p1.max(p2) as f64 + p1o.min(p2o) as f64) / 2.0
@@ -625,7 +573,7 @@ fn mediana(slice1: &[i32], slice2: &[i32]) -> f64 {
             };
         }
 
-        // ajusta fa/fb binariamente
+        // adjust fa/fb
         if p1 <= p2o {
             fa += 1;
             fb -= 1;
@@ -647,17 +595,19 @@ fn main() {
 }
 ```
 
-Esta função calcula a mediana de dois slices ordenados sem fundi-los por completo, usando índices de partição (`fa` e `fb`) que podem se estender além dos limites para simular sentinelas infinitas. Em cada iteração ela compara os elementos à esquerda e à direita dessas partições—tornando-os `i32::MIN` ou `i32::MAX` quando fora de alcance—para determinar se a divisão entre as duas metades está balanceada; quando encontra a partição ideal, retorna o elemento do meio (ou a média dos dois do meio, em caso de total par). Se não, ajusta `fa` e `fb` de forma binária (incrementando um e decrementando o outro) até convergir para a posição correta em tempo logarítmico (`O(log n)`).
+This function computes the median of two sorted slices without fully merging them, using partition indices (`fa` and `fb`) that may extend beyond the bounds to simulate infinite sentinels. In each iteration, it compares the elements to the left and right of these partitions—treating them as `i32::MIN` or `i32::MAX` when out of bounds—to determine whether the split between the two halves is balanced; when it finds the ideal partition, it returns the middle element, or the average of the two middle elements in the case of an even total. Otherwise, it adjusts `fa` and `fb` in a binary manner by incrementing one and decrementing the other until it converges to the correct position in logarithmic time `O(log n)`.
 
 ---
 
 ## 10) Binary Tree Traversal
 
-Binary Tree Traversal: percorre árvores em pré-, em-, pós-ordem ou variações para resolver desde impressão de valores até validação de estrutura. Problemas simples incluem “Binary Tree Inorder Traversal” e “Validate Binary Search Tree”.
+**Binary Tree Traversal:** traverses trees in pre-order, in-order, post-order, or variations to solve problems ranging from printing values to validating structure. Simple problems include “Binary Tree Inorder Traversal” and “Validate Binary Search Tree”.
 
-Aqui está um problema deste tipo, um pouco grande, mas que exemplifica bem: 
+Here is a problem of this type, a bit larger, but one that illustrates it well:
 
-Dada uma lista contendo o ano e o acontecimento histórico, crie uma árvore com seus anos e encontre o menor nó ancestral comum a dois anos determinados. Mostre como percorrê-la em pré-ordem, em-ordem e pós-ordem:
+Given a list containing a year and a historical event, build a tree with those years and find the lowest common ancestor node for two given years. Show how to traverse it in pre-order, in-order, and post-order:
+
+(The list is in Portuguese, but this does not matter)
 
 - 1958,"Brasil é campeão mundial de futebol na Suécia";
 - 1962,"Eleição do Papa Paulo VI";
@@ -677,7 +627,7 @@ Dada uma lista contendo o ano e o acontecimento histórico, crie uma árvore com
 - 1956,"Elvis Presley lança seu primeiro álbum musical";
 - 1953,"Getúlio Vargas cria a Petrobras";
 
-Minha implementação: 
+My implementation: 
 
 ```Rust
 use std::collections::BTreeMap;
@@ -789,41 +739,42 @@ fn main() {
 
 ```
 
-A implementação cria uma **árvore binária de busca balanceada** a partir de uma lista ordenada de anos, usando divisão recursiva ao meio. As travessias (pré, em e pós-ordem) percorrem a árvore da forma esperada. A busca e o ancestral comum funcionam conforme a lógica de BST. 
+The implementation builds a **balanced binary search tree** from a sorted list of years using recursive division at the midpoint. The traversals (pre-order, in-order, and post-order) walk the tree as expected. The search and the lowest common ancestor follow standard BST logic.
 
-- **Busca:** `O(log n)` — rápido, porque a árvore é balanceada.
-- **Em-ordem:** `O(n)` — visita todos os nós uma vez.
-- **Pré-ordem:** `O(n)` — mesma coisa, visita todos os nós.
-- **Pós-ordem:** `O(n)` — também visita todos os nós.
+* **Search:** `O(log n)` — fast, because the tree is balanced.
+* **In-order:** `O(n)` — visits all nodes once.
+* **Pre-order:** `O(n)` — same, visits all nodes.
+* **Post-order:** `O(n)` — also visits all nodes.
 
 ---
 
 ## 11) Depth-First Search (DFS)
 
-Depth-First Search (DFS): explora recursivamente caminhos até o fim antes de retroceder. Emprega-se em “Path Sum” (verificar soma ao longo de um caminho), “Number of Islands” (contar ilhas marcando água e terra) e detecção de ciclos em grafos.
+**Depth-First Search (DFS):** recursively explores paths to the end before backtracking. It is used in “Path Sum” (checking the sum along a path), “Number of Islands” (counting islands by marking water and land), and cycle detection in graphs.
 
-Eis um exemplo de problema típico: 
+Here is an example of a typical problem:
 
-Dada uma lista de pares de cidades interligadas por estradas, indique se é possível ir de determinada cidade, origem, até outra cidade, destino.
+Given a list of pairs of cities connected by roads, indicate whether it is possible to go from a given city, the source, to another city, the destination.
+
 ```
                  [['b','f'],['a','b'],['d','e'],['a','c'],['c','d'],['f','e'],['b','c'],['j','k'],['c','e']]
 ```
 
-Minha implementação seria: 
+My implementation: 
 
 ```Rust
 use std::collections::{HashMap, HashSet};
 
-/// Verifica via DFS se existe caminho direcionado de `origem` a `destino`
+/// Checks via DFS whether there is a directed path from `origem` (origin) to `destino` (destination)
 fn existe_caminho_dfs(arestas: &[(char, char)], origem: char, destino: char) -> bool {
-    // Monta lista de adjacência
+    // Builds the adjacency list
     let mut grafo: HashMap<char, Vec<char>> = HashMap::new();
     for &(de, para) in arestas {
         grafo.entry(de).or_default().push(para);
     }
-    // Conjunto de visitados para evitar loops
+    // Set of visited nodes to avoid loops
     let mut visitadas = HashSet::new();
-    // Chama DFS inicial
+    // Invoke initial DFS
     dfs(origem, destino, &grafo, &mut visitadas)
 }
 
@@ -836,9 +787,9 @@ fn dfs(
     if atual == destino {
         return true;
     }
-    // Marca antes de recursão para não revisitar
+    // Marks before recursion to avoid revisiting
     visitadas.insert(atual);
-    // Explora cada vizinho
+    // Explore each neighbor (vizinho)
     if let Some(vizinhos) = grafo.get(&atual) {
         for &vizinho in vizinhos {
             if !visitadas.contains(&vizinho) {
@@ -869,53 +820,54 @@ fn main() {
 
 ```
 
-Esse código implementa uma busca em profundidade (DFS) para verificar se existe caminho de `origem` até `destino` em um grafo direcionado. Ele usa recursão para explorar cada caminho até o fundo antes de voltar. A complexidade é `O(V + E)`, onde `V` é o número de nós e `E` é o número de arestas no grafo. 
+This code implements a depth-first search (DFS) to check whether there is a path from `origem` to `destino` in a directed graph. It uses recursion to explore each path to the end before backtracking. The complexity is `O(V + E)`, where `V` is the number of nodes and `E` is the number of edges in the graph.
 
-DFS explora um caminho até o fundo usando recursão ou pilha, enquanto BFS explora por níveis usando fila. Ambos têm complexidade `O(V + E)`, mas BFS garante o menor caminho em grafo não ponderado, e DFS é útil para tarefas como detecção de ciclos ou ordem topológica.
+DFS explores a path to the end using recursion or a stack, while BFS explores level by level using a queue. Both have complexity `O(V + E)`, but BFS guarantees the shortest path in an unweighted graph, and DFS is useful for tasks such as cycle detection or topological ordering.
 
 ---
 
 ## 12) Breadth-First Search (BFS)
 
-Breadth-First Search (BFS): avança nível por nível, ideal para menor caminho em grafos não ponderados ou árvores. Exemplos são “Word Ladder” (transformar palavra em outra minimizando passos) e “Binary Tree Level Order Traversal”.
+**Breadth-First Search (BFS):** progresses level by level, ideal for finding the shortest path in unweighted graphs or trees. Examples include “Word Ladder” (transforming one word into another with the minimum number of steps) and “Binary Tree Level Order Traversal”.
 
-Um problema típico seria: 
+A typical problem would be:
 
-Dada uma lista de pares de cidades interligadas por estradas, indique qual é a menor rota entre duas cidades dadas.
+Given a list of pairs of cities connected by roads, determine the shortest route between two given cities.
+
 
 ```
-			{'b','f'},{'a','b'},{'d','e'},
-	        {'a','c'},{'c','d'},{'f','e'},
-	        {'b','c'},{'c','e'}
+            {'b','f'},{'a','b'},{'d','e'},
+            {'a','c'},{'c','d'},{'f','e'},
+            {'b','c'},{'c','e'}
 ```
 
-Minha implementação seria: 
+My implementation: 
 
 ```Rust
 use std::collections::{HashMap, VecDeque};
 
 fn menor_caminho(arestas: &[(char, char)], inicio: char, fim: char) -> Vec<char> {
-    // Monta lista de adjacência
+    // Builds the adjacency list
     let mut grafo: HashMap<char, Vec<char>> = HashMap::new();
     for &(a, b) in arestas {
         grafo.entry(a).or_default().push(b);
         grafo.entry(b).or_default().push(a);
     }
 
-    // Mapeia cada nó ao seu predecessor na busca
+    // Maps each node to its predecessor in the search
     let mut anteriores: HashMap<char, char> = HashMap::new();
-    // Fila para o BFS
+    // BFS Queue
     let mut fila: VecDeque<char> = VecDeque::new();
-    // Marca nós visitados
+    // Mark visited
     let mut visitados: HashMap<char, bool> = HashMap::new();
 
     fila.push_back(inicio);
     visitados.insert(inicio, true);
 
-    // Executa BFS até encontrar `fim` ou esgotar
+    // Run BFS until find `fim` or empty
     while let Some(cidade) = fila.pop_front() {
         if cidade == fim {
-            // Reconstrói caminho de trás pra frente
+            // Rebuild transverse path
             let mut caminho = vec![fim];
             let mut atual = fim;
             while let Some(&ant) = anteriores.get(&atual) {
@@ -934,7 +886,7 @@ fn menor_caminho(arestas: &[(char, char)], inicio: char, fim: char) -> Vec<char>
         }
     }
 
-    // Se não encontrou rota
+    // If the path is not found
     Vec::new()
 }
 
@@ -956,30 +908,32 @@ fn main() {
 }
 ```
 
-A função implementa uma busca em largura (BFS) para encontrar o **menor caminho** num grafo não ponderado, usando fila (`VecDeque`), lista de adjacência e um mapa de predecessores para reconstruir o caminho.  
+The function implements a breadth-first search (BFS) to find the **shortest path** in an unweighted graph, using a queue (`VecDeque`), an adjacency list, and a predecessor map to reconstruct the path.
 
-Funciona assim:  
-- Monta o grafo a partir das arestas.  
-- Faz BFS a partir do nó inicial.  
-- Grava de onde veio cada nó visitado.  
-- Quando chega no destino, reconstrói o caminho de volta.  
+It works as follows:
 
-Complexidade: `O(V + E)` — visita cada vértice e aresta uma vez.
+* Builds the graph from the edges.
+* Performs BFS starting from the initial node.
+* Records where each visited node came from.
+* When it reaches the destination, it reconstructs the path back.
+
+Complexity: `O(V + E)` — it visits each vertex and edge once.
 
 ---
 
 ## 13) Matrix Traversal
 
-Matrix Traversal: adaptações de DFS/BFS ou ponteiros especiais para grids. “Number of Islands” em matriz, “Rotting Oranges” (propagação de podridão) e “Spiral Matrix” (listar elementos em espiral) são casos clássicos.
+**Matrix Traversal:** adaptations of DFS/BFS or special pointer techniques for grids. “Number of Islands” on a matrix, “Rotting Oranges” (spread of rot), and “Spiral Matrix” (listing elements in spiral order) are classic cases.
 
-Aqui está um exemplo de problema: 
+Here is an example of a problem:
 
-Desculpe pela confusão. Em “Matrix Traversal” estamos falando de percorrer **uma grade 2D**, não de uma matriz de adjacência de grafo. Um exemplo clássico e simples é:
+Sorry for the confusion. In “Matrix Traversal” we are talking about traversing a **2D grid**, not a graph adjacency matrix. A classic and simple example is:
 
-**Número de Ilhas**
-Dada uma matriz de caracteres onde `'1'` representa terra e `'0'` água, conte quantas “ilhas” existem — regiões de `'1'` conectadas verticalmente ou horizontalmente.
+**Number of Islands**
+Given a matrix of characters where `'1'` represents land and `'0'` represents water, count how many “islands” exist — regions of `'1'` connected vertically or horizontally.
 
-Por exemplo, neste grid:
+For example, in this grid:
+
 
 ```
 1 1 0 0 0
@@ -988,13 +942,13 @@ Por exemplo, neste grid:
 0 0 0 1 1
 ```
 
-há três ilhas:
+there are three islands:
 
-* Uma no canto superior esquerdo (quatro ‘1’ conectados),
-* Uma isolada no meio (um único ‘1’),
-* E uma no canto inferior direito (dois ‘1’ juntos).
+* One in the upper-left corner (four connected ‘1’s),
+* One isolated in the middle (a single ‘1’),
+* And one in the lower-right corner (two connected ‘1’s).
 
-Outro exemplo:
+Another example:
 
 ```
 1 0 1 1
@@ -1002,15 +956,16 @@ Outro exemplo:
 0 0 1 0
 ```
 
-tem três ilhas:
+there are three islands:
 
-* a região `[(0,0),(1,0)]`,
-* o bloco `[(0,2),(0,3),(1,3)]`,
-* e o ponto `(2,2)`.
+* the region `[(0,0),(1,0)]`,
+* the block `[(0,2),(0,3),(1,3)]`,
+* and the point `(2,2)`.
 
-Esse problema se resolve exatamente com **DFS** (ou BFS) na **grade**: você varre cada célula, e quando encontra um `'1'` não visitado, dispara um DFS que “inunda” essa ilha marcando todas as células conectadas, incrementa o contador e segue até examinar todo o grid.
+This problem is solved exactly with **DFS** or BFS on the **grid**: you scan each cell, and when you find an unvisited `'1'`, you trigger a DFS that “floods” that island by marking all connected cells, increment the counter, and continue until the entire grid has been examined.
 
-Minha implementação: 
+My implementation:
+
 
 ```Rust
 fn contar_ilhas(grid: &mut Vec<Vec<char>>) -> usize {
@@ -1030,7 +985,7 @@ fn contar_ilhas(grid: &mut Vec<Vec<char>>) -> usize {
     total
 }
 
-/// Marca recursivamente todas as células conectadas à ilha em (i, j) como '0'
+/// Recursively marks all cells connected to the island at (i, j) as '0'
 fn inundar_ilha(
     grid: &mut Vec<Vec<char>>,
     i: usize,
@@ -1038,14 +993,14 @@ fn inundar_ilha(
     linhas: usize,
     colunas: usize,
 ) {
-    // Se está fora dos limites ou já é água, nada a fazer
+    // If it is out of bounds or already water, nothing to do
     if i >= linhas || j >= colunas || grid[i][j] != '1' {
         return;
     }
-    // “Afoga” a célula, evitando revisitas
+    // “Floods” the cell, avoiding revisits
     grid[i][j] = '0';
 
-    // Tenta as quatro direções
+    // Try 4 directions
     if i > 0 {
         inundar_ilha(grid, i - 1, j, linhas, colunas);
     }
@@ -1078,25 +1033,25 @@ fn main() {
 }
 ```
 
-A função `contar_ilhas` usa busca em profundidade (DFS) para identificar e contar ilhas em uma matriz de `'1'` e `'0'`. Cada vez que encontra um `'1'`, inicia uma inundação recursiva (`inundar_ilha`) que marca toda a ilha como visitada virando `'0'`. A complexidade é **O(m × n)**, onde `m` é o número de linhas e `n` o de colunas, pois cada célula é visitada no máximo uma vez.
+The function `contar_ilhas` uses depth-first search (DFS) to identify and count islands in a matrix of `'1'` and `'0'`. Each time it finds a `'1'`, it starts a recursive flood (`inundar_ilha`) that marks the entire island as visited by turning it into `'0'`. The complexity is **O(m × n)**, where `m` is the number of rows and `n` is the number of columns, since each cell is visited at most once.
 
 14. Backtracking
 
-Backtracking: prova/erro sistemático para construir soluções parciais e desfazê-las conforme necessário. Serve para “Permutations”, “Combination Sum” e “N-Queens”, onde cada escolha abre vários caminhos a explorar.
+**Backtracking:** systematic trial and error to build partial solutions and undo them as needed. It is used for “Permutations”, “Combination Sum”, and “N-Queens”, where each choice opens multiple paths to explore.
 
-Eis um exemplo de problema: 
+Here is an example of a problem:
 
-Dado o número de linhas e colunas, gere um **labirinto perfeito** (isto é, conectado e sem ciclos) sobre uma grade 2D, removendo paredes entre células vizinhas de forma aleatória e retrocedendo (backtracking) sempre que ficar sem opções. Marque a célula (0,0) como **início** e a (linhas−1,colunas−1) como **fim**. Depois de construir o labirinto, encontre um caminho da entrada à saída, retornando a sequência de coordenadas que leva ao destino.
+Given the number of rows and columns, generate a **perfect maze** (that is, connected and without cycles) on a 2D grid by removing walls between neighboring cells randomly and backtracking whenever there are no options left. Mark cell (0,0) as the **start** and (rows−1,columns−1) as the **end**. After building the maze, find a path from the entrance to the exit, returning the sequence of coordinates that leads to the destination.
 
-Minha implementação: 
+My implementation:
 
 ```Rust
 use rand::Rng;
 use std::fmt;
 
-// Definição da struct Celula (Célula do labirinto)
+// Definition of the `Celula` struct (maze cell)
 struct Celula {
-    paredes: [bool; 4], // Paredes: Norte, Sul, Leste, Oeste
+    paredes: [bool; 4], // Walls: North, South, East, West
     visitada: bool,
     inicio: bool,
     fim: bool,
@@ -1104,13 +1059,13 @@ struct Celula {
     y: usize,
 }
 
-// Constantes para as direções
-const NORTE: usize = 0;
-const SUL: usize = 1;
-const LESTE: usize = 2;
-const OESTE: usize = 3;
+// directions constants
+const NORTE: usize = 0; //North
+const SUL: usize = 1; //South
+const LESTE: usize = 2; //East
+const OESTE: usize = 3; //West
 
-// Definição da struct Pilha (Stack)
+// Stack struct
 struct Pilha<T> {
     data: Vec<T>,
 }
@@ -1137,7 +1092,7 @@ impl<T> Pilha<T> {
     }
 }
 
-// Definição da struct Labirinto
+// maze Struct
 struct Labirinto {
     linhas: usize,
     colunas: usize,
@@ -1152,7 +1107,7 @@ struct Labirinto {
 }
 
 impl Labirinto {
-    // Método para criar um novo labirinto
+    // New maze
     fn new(linhas: usize, colunas: usize) -> Self {
         let mut labirinto = Labirinto {
             linhas,
@@ -1170,7 +1125,7 @@ impl Labirinto {
         labirinto
     }
 
-    // Método para inicializar o labirinto
+    // Initialize maze
     fn inicializar(&mut self) {
         let mut contador = 0;
         while contador < 4 {
@@ -1205,12 +1160,12 @@ impl Labirinto {
         }
     }
 
-    // Método para verificar se uma célula está fechada (todas as paredes intactas)
+    // Method to check if a cell is closed (all walls intact)
     fn fechada(&self, celula: &Celula) -> bool {
         celula.paredes[NORTE] && celula.paredes[SUL] && celula.paredes[LESTE] && celula.paredes[OESTE]
     }
 
-    // Método para criar o labirinto usando backtracking
+    // Method to create the maze using backtracking
     fn criar(&mut self) {
         self._qtd_total = self.linhas * self.colunas;
         let mut rng = rand::thread_rng();
@@ -1228,7 +1183,7 @@ impl Labirinto {
         }
     }
 
-    // Método para processar células durante a criação do labirinto
+    // Method to process cells during maze generation
     fn processa_celula(&mut self) {
         loop {
             if !self.pilha.is_empty() {
@@ -1256,7 +1211,7 @@ impl Labirinto {
         }
     }
 
-    // Método para verificar se uma célula é um beco sem saída
+    // Method to check whether a cell is a dead end
     fn is_dead_end(&self, celula: (usize, usize)) -> bool {
         let (y, x) = celula;
         if y > 0 && !self.celulas[y - 1][x].visitada {
@@ -1274,7 +1229,7 @@ impl Labirinto {
         true
     }
 
-    // Método para quebrar as paredes entre duas células
+    // Method to break the walls between two cells
     fn quebrar_paredes(&mut self, c1: (usize, usize), c2: (usize, usize)) {
         let (y1, x1) = c1;
         let (y2, x2) = c2;
@@ -1293,7 +1248,7 @@ impl Labirinto {
         }
     }
 
-    // Método para pegar uma célula vizinha não visitada
+    // Method to get an unvisited neighboring cell (vizinha)
     fn pegar_vizinha(&self, y: usize, x: usize) -> Option<(usize, usize)> {
         let mut procurar = true;
         let mut cel = None;
@@ -1332,7 +1287,7 @@ impl Labirinto {
     }
 }
 
-// Implementação do Display para imprimir o labirinto
+// Maze display
 impl fmt::Display for Labirinto {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let mut linhas = vec![vec![' '; (self.colunas * 3) + 1]; self.linhas * 3];
@@ -1355,7 +1310,7 @@ impl fmt::Display for Labirinto {
 }
 
 impl Labirinto {
-    // Método auxiliar para obter a representação de uma célula
+    // Represents a cell
     fn get_celula(&self, cel: &Celula) -> Vec<Vec<char>> {
         let mut linha1 = vec![' ', ' ', ' '];
         let mut linha2 = vec![' ', ' ', ' '];
@@ -1385,7 +1340,7 @@ impl Labirinto {
         vec![linha1, linha2, linha3]
     }
 
-    // Método auxiliar para inserir a representação de uma célula na matriz de caracteres
+    // Insert cell representation
     fn insert(&self, linhas: &mut Vec<Vec<char>>, matriz: &Vec<Vec<char>>, i: usize, j: usize) {
         let linha = i * 2;
         let coluna = j * 2;
@@ -1397,7 +1352,7 @@ impl Labirinto {
     }
 }
 
-// Definição da struct Solver (Resolvedor)
+// Maze solver
 struct Solver {
     pilha: Pilha<(usize, usize)>,
     corrente: Option<(usize, usize)>,
@@ -1407,7 +1362,7 @@ struct Solver {
 }
 
 impl Solver {
-    // Método para criar um novo Solver
+    // New Solver
     fn new() -> Self {
         Solver {
             pilha: Pilha::new(),
@@ -1418,7 +1373,7 @@ impl Solver {
         }
     }
 
-    // Método para resolver o labirinto
+    // Solve the maze
     fn solve(&mut self, labirinto: &mut Labirinto) {
         self.visitadas = vec![vec![false; labirinto.colunas]; labirinto.linhas];
         self.corrente = Some((0, 0));
@@ -1430,7 +1385,7 @@ impl Solver {
         labirinto.caminho = Some(self.caminho.clone());
     }
 
-    // Método para procurar o caminho através do labirinto
+    // Find path thru the maze
     fn procurar(&mut self, labirinto: &Labirinto) {
         let mut buffer = None;
         while !self.pilha.is_empty() {
@@ -1473,7 +1428,6 @@ impl Solver {
     }
 }
 
-// Função principal
 fn main() {
     let args: Vec<String> = std::env::args().collect();
     let linhas = if args.len() > 1 { args[1].parse::<usize>().unwrap_or(10) } else { 10 };
@@ -1488,59 +1442,60 @@ fn main() {
 }
 ```
 
-#### Criação do labirinto
+#### Maze Generation
 
-O labirinto é gerado usando um **algoritmo de backtracking recursivo**, com uma pilha explícita para evitar repetição. A lógica é:
+The maze is generated using a **recursive backtracking algorithm**, with an explicit stack to avoid repetition. The logic is:
 
-- Escolher uma célula inicial aleatória.
-- Enquanto houver células não visitadas:
-  - Escolher aleatoriamente uma vizinha ainda não visitada.
-  - Quebrar a parede entre a célula atual e a vizinha.
-  - Empurrar a célula atual na pilha e marcar a vizinha como visitada.
-  - Se a célula atual não tem mais vizinhos disponíveis, voltar (pop da pilha).
+* Choose a random starting cell.
+* While there are unvisited cells:
 
-Esse processo constrói um labirinto conexo e sem ciclos.
+  * Randomly choose a neighboring cell that has not yet been visited.
+  * Break the wall between the current cell and the neighbor.
+  * Push the current cell onto the stack and mark the neighbor as visited.
+  * If the current cell has no more available neighbors, backtrack (pop from the stack).
 
-**Complexidade de tempo da criação:**  
-É **O(m × n)**, onde `m` é o número de linhas e `n` o de colunas. Cada célula é visitada uma única vez e as operações são constantes por célula.
+This process builds a connected, acyclic maze.
 
-#### Resolução do labirinto
+**Time complexity of generation:**
+It is **O(m × n)**, where `m` is the number of rows and `n` is the number of columns. Each cell is visited exactly once, and operations per cell are constant.
 
-O labirinto é resolvido com uma busca em profundidade (**DFS**) também baseada em **backtracking**. O `Solver` usa uma pilha para percorrer o caminho possível:
+#### Maze Solving
 
-- Começa da entrada (posição (0,0)).
-- A cada passo, tenta seguir em uma das quatro direções, desde que a parede esteja quebrada e a nova posição ainda não tenha sido visitada.
-- Se não houver caminho, volta para a posição anterior (backtrack).
-- Termina ao alcançar a saída (posição (m-1, n-1)).
+The maze is solved using depth-first search (**DFS**), also based on **backtracking**. The `Solver` uses a stack to traverse possible paths:
 
-**Complexidade de tempo da resolução:**  
-Também é **O(m × n)**. Cada célula é visitada no máximo uma vez durante a busca.
+* Starts from the entrance (position (0,0)).
+* At each step, tries to move in one of four directions, as long as the wall is open and the new position has not yet been visited.
+* If no path is available, it backtracks to the previous position.
+* Stops when it reaches the exit (position (m-1, n-1)).
 
-Você pode encontrar o [**projeto completo do labirinto aqui**](https://github.com/cleuton/rustingcrab/tree/main/code_samples/labirinto).
+**Time complexity of solving:**
+Also **O(m × n)**. Each cell is visited at most once during the search.
+
+You can find the [**complete maze project here**](https://github.com/cleuton/rustingcrab/tree/main/code_samples/labirinto).
 
 --- 
 
 ## 15) Dynamic Programming Patterns
 
-Dynamic Programming Patterns: reconhecimento de subproblemas sobrepostos e estados. Inclui “Climbing Stairs” (fibonnaci simples), “Coin Change” (moedas para formar valor) e “Longest Increasing Subsequence”, onde tabelas ajudam a evitar recomputar resultados.
+**Dynamic Programming Patterns:** recognition of overlapping subproblems and states. It includes “Climbing Stairs” (simple Fibonacci), “Coin Change” (coins to form a value), and “Longest Increasing Subsequence”, where tables help avoid recomputing results.
 
-Exemplo de problema: 
+Example problem:
 
-Dado um vetor de inteiros (que podem ser positivos ou negativos), encontre a soma máxima que pode ser obtida escolhendo elementos de modo que nenhum par de elementos selecionados seja adjacente no vetor. Por exemplo, em
+Given an array of integers, which may be positive or negative, find the maximum sum that can be obtained by selecting elements such that no two selected elements are adjacent in the array. For example, in
 
 ```
 [10, –3, 7, 8, –1, 0, 2]  
 ```
 
-a melhor escolha é pegar 10 + 7 + 8 + 2 = 27? Não—como 8 e 7 são adjacentes só podemos escolher um deles, então o ótimo é 10 + 7 + 8? Também não: o algoritmo encontra que 10 + 7 + 8+ 2 viola a condição, e na verdade o máximo válido é 10 + 7 + 8 (saltando o –1) ou 10 + 7 + 2 etc., resultando em 20. Em
+the best choice is to take 10 + 7 + 8 + 2 = 27? No—since 8 and 7 are adjacent, we can only choose one of them, so is the optimal 10 + 7 + 8? Not that either: the algorithm finds that 10 + 7 + 8 + 2 violates the condition, and in fact the maximum valid sum is 10 + 7 + 8 skipping the −1 or 10 + 7 + 2, etc., resulting in 20. In
 
 ```
 [12, 2, 1, –2, 4, 5]  
 ```
 
-a melhor soma sem adjacências é 12 + 1 + 5 = 18. Essa é a versão “House Robber” do LeetCode, um padrão clássico de programação dinâmica em que a cada posição `i` você escolhe entre manter o resultado de `i–1` ou somar o valor `i` ao melhor de `i–2`.
+the best sum without adjacencies is 12 + 1 + 5 = 18. This is the “House Robber” version from LeetCode, a classic dynamic programming pattern in which at each position `i` you choose between keeping the result from `i–1` or adding the value at `i` to the best result from `i–2`.
 
-Minha implementação:
+My implementation:
 
 ```Rust
 fn maior_soma_sem_adjacentes(valores: &[i32]) -> i32 {
@@ -1552,20 +1507,21 @@ fn maior_soma_sem_adjacentes(valores: &[i32]) -> i32 {
         return valores[0];
     }
 
-    // dp[i] = maior soma possível considerando até o índice i
+    // dp[i] = greatest possible sum
     let mut dp = vec![0; n];
     dp[0] = valores[0];
-    // para o segundo elemento, escolhe o maior entre o primeiro e o segundo
+    // second element
     dp[1] = valores[0].max(valores[1]);
 
-    // preenche o dp a partir do terceiro elemento
     for i in 2..n {
-        // se pular o elemento i, fica com dp[i-1];
-        // se escolher o elemento i, soma dp[i-2] + valores[i]
+
+        // if you skip element i, keep dp[i-1];
+        // if you choose element i, sum dp[i-2] + values[i]
+
         dp[i] = dp[i - 1].max(dp[i - 2] + valores[i]);
     }
 
-    // a resposta é o último valor do dp
+    // last dp value is the answer
     dp[n - 1]
 }
 
@@ -1588,16 +1544,16 @@ fn main() {
 
 ```
 
-Este código implementa uma solução com **programação dinâmica (Dynamic Programming)** para o problema clássico de encontrar a **máxima soma de elementos não adjacentes** em um vetor.
+This code implements a **dynamic programming** solution for the classic problem of finding the **maximum sum of non-adjacent elements** in an array.
 
-Funciona assim:  
+It works as follows:
 
-Para cada posição `i`, calcula-se a maior soma possível considerando até aquele ponto, usando a relação:  
+For each position `i`, it computes the maximum possible sum up to that point, using the relation:
 
 ```rust
 dp[i] = max(dp[i - 1], dp[i - 2] + valores[i])
 
 ```
-Isso significa que você escolhe entre manter a melhor soma anterior ou incluir o valor atual somado com a melhor soma dois índices antes.
+This means you choose between keeping the previous best sum or including the current value added to the best sum two indices before.
 
-Essa abordagem é típica de programação dinâmica, com **tempo O(n)** e **espaço O(n)**, onde `n` é o tamanho do vetor. Pode ser otimizada para usar apenas duas variáveis, reduzindo o espaço para **O(1)**.
+This approach is typical of dynamic programming, with **time O(n)** and **space O(n)**, where `n` is the size of the array. It can be optimized to use only two variables, reducing the space to **O(1)**.
